@@ -1,0 +1,18 @@
+<!-- Copyright (c) 2020 Stefan Grimm. All rights reserved.
+     Licensed under the GPL. See LICENSE file in the project root for full license information.
+-->
+<p>Administrate an existing event:</p>
+
+<form>
+  <input type="search" class="form-control" #serach />
+  <button type="button" (click)="getEvent(serach.value)">Find</button>
+</form>
+
+<br />
+<p>Show this all the time</p>
+<p *ngIf="found">
+  Your event: {{eventData.title}}
+  <br />
+  <!--button type="button" (click)="delete()">delete</!-button-->
+
+</p>

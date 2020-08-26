@@ -1,0 +1,80 @@
+<!-- Copyright (c) 2020 Stefan Grimm. All rights reserved.
+     Licensed under the GPL. See LICENSE file in the project root for full license information.
+-->
+<p>Event Registration: {{eventToken}} found: {{found}}</p>
+
+<h1 *ngIf="currentEvent">{{currentEvent.data.title}}, {{currentEvent.data.location}}, {{eventStartTime.toLocaleString()}}</h1>
+<p>Num Registration: {{stats.TotNumRegistrations}}</p>
+<p>Num Strategies: {{stats.TotNumStrategies}}</p>
+<p>Num Positions: {{stats.TotNumPositions}}</p>
+
+<table *ngIf="stats.theOptima">
+  <thead>
+    <tr>
+      <th>Position</th>
+      <th>Registriert</th>
+      <th>&Uuml;berz&auml;hlig</th>
+      <th>n&auml;chstes Optimum</th>
+      <th>Fehlend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let i of stats.theOptima | keyvalue">
+      <td>{{i.key}}</td>
+      <td>{{i.value.registrations}}</td>
+      <td>{{i.value.remaining}}</td>
+      <td>{{i.value.nextOptimum}}</td>
+      <td>{{i.value.missing}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<form>
+  <div>
+
+    <mat-form-field class="example-full-width">
+      <mat-label>Name</mat-label>
+      <input matInput name="name" id="name" [(ngModel)]="newRegistration.name" type="text" class="form-control" />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Position</mat-label>
+      <mat-select [(value)]="selectedPosition">
+        <mat-option *ngFor="let p of positions" [value]="p">{{p}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="addRegistration()">Hinzuf&uuml;gen</button>
+
+  </div>
+</form>
+
+<table *ngIf="registrations">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Position</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody *ngFor="let p of positions">
+    <tr *ngFor="let reg of registrations | rosterfilter:p" style="background-color: #abffab;">
+      <td>{{reg.name}}</td>
+      <td>{{reg.position}}</td>
+      <td>
+        {{reg.creationTime.valueOf()}}
+        <!--<button type="button" (click)="addRegistration()">Reserve</button>
+        <button type="button" (click)="addRegistration()">Remove</button>-->
+      </td>
+    </tr>
+    <tr *ngFor="let reg of registrations | scratchfilter:p" style="background-color: #ffafaf;">
+      <td>{{reg.name}}</td>
+      <td>{{reg.position}}</td>
+      <td>
+        {{reg.creationTime.valueOf()}}
+        <!--<button type="button" (click)="addRegistration()">Reserve</button>
+        <button type="button" (click)="addRegistration()">Remove</button>-->
+      </td>
+    </tr>
+  </tbody>
+</table>
