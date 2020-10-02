@@ -11,7 +11,8 @@ internal enum LinkType {
     prev,
     next,
     last,
-    other
+    other,
+    routerLink
   }
 
   internal enum ActionType {

@@ -3,8 +3,10 @@
 //
 using System;
 
-namespace opteamate {
+namespace opteamate
+{
   public class RegistrationData {
+    public long RegistrationDboId { get; set; }
     public string Name { get; set; }
     public string Position { get; set; }
     public string SponsorOf { get; set; }

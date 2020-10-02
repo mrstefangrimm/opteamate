@@ -3,7 +3,8 @@
 //
 using System;
 
-namespace opteamate {
+namespace opteamate
+{
   public class EventData {
     public long EventDboId { get; set; }
     public Guid EventToken { get; set; }
@@ -12,6 +13,6 @@ namespace opteamate {
     public string Location { get; set; }
     public DateTime Start { get; set; }
     public long OptimumDboId { get; set; }
-    public Guid TeamCode { get; set; }
+    public Guid SeriesToken { get; set; }
   }
 }

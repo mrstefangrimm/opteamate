@@ -1,10 +1,10 @@
-﻿{
+{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:51843",
-      "sslPort": 0
+      "applicationUrl": "http://localhost:62294",
+      "sslPort": 44395
     }
   },
   "profiles": {
@@ -15,19 +15,12 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "opteamate-VS": {
+    "BlazorMate": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:4700",
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "opteamate-NG": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "applicationUrl": "http://localhost:4700",
-      "environmentVariables": {
       }
     }
   }

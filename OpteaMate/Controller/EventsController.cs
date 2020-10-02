@@ -7,7 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace opteamate {
+namespace opteamate
+{
 
   [Route("api/[controller]")]
   [ApiController]
@@ -59,22 +60,68 @@ namespace opteamate {
       //return GetEventDto(evt);
     }
 
-    //// GET: api/events/99ad2095-52ea-49bd-a8fb-bbc8a88ef065
-    //[HttpGet("{eventtoken}")]
-    //public object GetEvent(Guid eventtoken) {
+    //GET "http://localhost:5000/api/events/bytoken?key=event&token=0000-abcd"
+    [HttpGet("byToken")]
+    public object GetEvents(string key, Guid token) {
 
-    //  var evtDbo = _context.Events.Find(1);
-    //  if (evtDbo == null) { return NotFound(); }
-    //  _context.Registrations.Load();
+      Func<EventDbo, bool> comp = null;
+      if (key == "event") { comp = a => a.EventToken == token; }
+      else if (key == "series") { comp = a => a.SeriesToken == token; }
+      if (comp != null) {
+        var eventsDto = new EventsDto();
+        eventsDto.Data = new List<EventDto>();
 
-    //  var evtDto = CreateEventDto(evtDbo);
-    //  return evtDto;
-    //}
+        var linkEvt = Url.ActionLink(@"api/bytoken", null, new { key = key, token = token });
 
-    //GET "http://localhost:5000/api/events/byname?firstName=a&lastName=b"
-    [HttpGet("byName")]
-    public object Get(string firstName, string lastName) {
+        eventsDto.AddLink(LinkType.self, linkEvt);
+
+        var matches = _context.Events.Where(comp);
+        foreach (EventDbo evtDbo in matches) {
+          var evtDto = CreateEventDto(evtDbo);
+          eventsDto.Data.Add(evtDto);
+        }
+        return eventsDto;
+      }      
       return NoContent();
+    }
+
+    //GET "http://localhost:5000/api/events/byevent?token=0000-abcd"
+    [HttpGet("byEvent")]
+    public object GetEventsByEventToken(Guid token) {
+      var eventsDto = new EventsDto();
+      eventsDto.Data = new List<EventDto>();
+
+      var linkEvt = Url.ActionLink(nameof(GetEventsByEventToken), null, new { token = token });
+      eventsDto.AddLink(LinkType.self, linkEvt);
+
+      var matches = _context.Events.Where(a => a.EventToken == token);
+      if (matches.Any())
+      {
+        _context.Registrations.Load();
+        foreach (EventDbo evtDbo in matches)
+        {
+          var evtDto = CreateEventDto(evtDbo);
+          eventsDto.Data.Add(evtDto);
+        }
+      }
+      return eventsDto;
+    }
+
+    //GET "http://localhost:5000/api/events/byseries?token=0000-abcd"
+    [HttpGet("bySeries")]
+    public object GetEventsBySeriesToken(Guid token) {
+      var eventsDto = new EventsDto();
+      eventsDto.Data = new List<EventDto>();
+
+      var linkEvt = Url.ActionLink(nameof(GetEventsBySeriesToken), null, new { token = token });
+      eventsDto.AddLink(LinkType.self, linkEvt);
+
+      var matches = _context.Events.Where(a => a.SeriesToken == token);
+      foreach (EventDbo evtDbo in matches) {
+        var evtDto = CreateEventDto(evtDbo);
+        eventsDto.Data.Add(evtDto);
+      }
+      return eventsDto;
     }
 
     [HttpPost]
@@ -85,10 +132,10 @@ namespace opteamate {
       evtDbo.CopyFrom(evt);
 
       _context.Events.Add(evtDbo);
-      int modifiedObjs = _context.SaveChanges();
+      _context.SaveChanges();
 
-      var evtDto = CreateEventDto(evtDbo);
-      return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
+      return CreateEventDto(evtDbo);
+      //return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
 
       //if (evt.Registrations != null) {
       //  foreach (var reg in evt.Registrations) {
@@ -117,8 +164,8 @@ namespace opteamate {
       _context.Update(evtDbo);
       var modified = _context.SaveChanges();
 
-      var evtDto = CreateEventDto(evtDbo);
-      return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
+      return CreateEventDto(evtDbo);
+      //return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
 
 
       //var evtData = _context.EventData.Find(id);
@@ -206,7 +253,7 @@ namespace opteamate {
       return NoContent();
     }
 
-    // DELETE: api/events/5/registrations/regid
+    // DELETE: api/events/5/registrations/4
     [HttpDelete("{id}/registrations/{regid}")]
     public object DeleteEventRegistration(long id, long regid) {
 
@@ -246,6 +293,12 @@ namespace opteamate {
       var linkReg = home + "/enroll/" + evtDbo.EventToken;
       evtDto.AddLink(LinkType.self, linkEvt);
       evtDto.AddLink(LinkType.other, linkReg);
+      evtDto.AddLink(LinkType.routerLink, "enroll/" + evtDbo.EventToken);
+      if (evtDbo.SeriesToken != Guid.Empty)
+      {     
+        evtDto.AddLink(LinkType.back, "series/" + evtDbo.SeriesToken);
+      }
+      evtDto.AddAction(ActionType.DELETE, linkEvt);
       return evtDto;
     }
 

@@ -1,14 +1,24 @@
 <!-- Copyright (c) 2020 Stefan Grimm. All rights reserved.
      Licensed under the GPL. See LICENSE file in the project root for full license information.
 -->
-<p>Event Registration: {{eventToken}} found: {{found}}</p>
 
-<h1 *ngIf="currentEvent">{{currentEvent.data.title}}, {{currentEvent.data.location}}, {{eventStartTime.toLocaleString()}}</h1>
-<p>Num Registration: {{stats.TotNumRegistrations}}</p>
-<p>Num Strategies: {{stats.TotNumStrategies}}</p>
-<p>Num Positions: {{stats.TotNumPositions}}</p>
+<h1>T&auml;tschmeister</h1>
 
-<table *ngIf="stats.theOptima">
+<p *ngIf="backRoute">
+  <a [routerLink]="['/'] + backRoute">Zur&uuml;ck zur Serie</a>
+</p>
+
+<h2 *ngIf="currentEvent">{{currentEvent.data.title}}, {{currentEvent.data.location}}, {{eventStartTime.toLocaleString()}}</h2>
+
+<div *ngIf="!backRoute">
+  Anzahl Registrierungen insgesamt: {{stats.TotNumRegistrations}}
+  <br />
+  URL: {{eventUrl}}
+  <button mat-raised-button color="standard" (click)="copyLinkToClipboard()">In die Zwischenablage</button>
+</div>
+
+
+<table>
   <thead>
     <tr>
       <th>Position</th>
@@ -54,7 +64,7 @@
     <tr>
       <th>Name</th>
       <th>Position</th>
-      <th>Action</th>
+      <th>...</th>
     </tr>
   </thead>
   <tbody *ngFor="let p of positions">
@@ -62,18 +72,14 @@
       <td>{{reg.name}}</td>
       <td>{{reg.position}}</td>
       <td>
-        {{reg.creationTime.valueOf()}}
-        <!--<button type="button" (click)="addRegistration()">Reserve</button>
-        <button type="button" (click)="addRegistration()">Remove</button>-->
+        <button mat-raised-button color="standard" (click)="deleteRegistration(reg.registrationDboId)">L&ouml;schen</button>
       </td>
     </tr>
     <tr *ngFor="let reg of registrations | scratchfilter:p" style="background-color: #ffafaf;">
       <td>{{reg.name}}</td>
       <td>{{reg.position}}</td>
       <td>
-        {{reg.creationTime.valueOf()}}
-        <!--<button type="button" (click)="addRegistration()">Reserve</button>
-        <button type="button" (click)="addRegistration()">Remove</button>-->
+        <button mat-raised-button color="standard" (click)="deleteRegistration(reg.registrationDboId)">L&ouml;schen</button>
       </td>
     </tr>
   </tbody>

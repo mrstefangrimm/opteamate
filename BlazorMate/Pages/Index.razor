@@ -1,0 +1,138 @@
+﻿@*  Copyright (c) 2020 Stefan Grimm. All rights reserved.
+    Licensed under the GPL. See LICENSE file in the project root for full license information.*@
+
+@page "/"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>T&auml;tschmeister</h1>
+<h2>Neuer Anlass</h2>
+<p>
+    Einzeln
+    <a href="@NextSeriesRoute">Serie</a>
+</p>
+
+@if (optima != null)
+{
+    <div>
+        <label>Schema</label>
+        <br />
+        <select @bind="selectedOptimumId">
+            @foreach (var item in optima)
+            {
+                <option value="@item.data.OptimumDboId">@item.data.name</option>
+            }
+        </select>
+
+        <label>-</label>
+        <label>Positions: @GetOptimumData(selectedOptimumId).positions</label>
+        <label>-</label>
+        <label>Optima: @GetOptimumData(selectedOptimumId).strategies</label>
+    </div>
+
+    <div>
+        <label>Was</label>
+        <input @bind="@newEvent.title" />
+        <label>Wo</label>
+        <input @bind="@newEvent.location" />
+    </div>
+
+    <div>
+        <label>Wann</label>
+
+        <input type="date" @bind="selectedDate" />
+
+        <select @bind="selectedHour">
+            @foreach (var item in new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 })
+            {
+                <option value="@item">@string.Format("{0:00}", item)</option>
+            }
+        </select>
+        <select @bind="selectedMinutes">
+            @foreach (var item in new[] { 0, 15, 30, 45 })
+            {
+                <option value="@item">@string.Format("{0:00}", item)</option>
+            }
+        </select>
+    </div>
+
+    <button class="btn btn-primary" @onclick="AddEvent">Erstellen</button>
+}
+
+@code {
+  const string ServiceEndpoint = "http://localhost:4700/";
+  const string SeriesRoute = "/series/";
+
+  string nextSeriesToken;
+  OptimumResponse[] optima;
+  EventData newEvent = new EventData();
+
+  long selectedOptimumId;
+  DateTime selectedDate = DateTime.Now;
+  int selectedHour = 19;
+  int selectedMinutes = 0;
+
+  protected override async Task OnInitializedAsync()
+  {
+      var request = ServiceEndpoint + "api/optima";
+      var response = await Http.GetFromJsonAsync<OptimaResponse>(request);
+      optima = response.data;
+      selectedOptimumId = optima[1].data.OptimumDboId;
+      nextSeriesToken = Guid.NewGuid().ToString();
+  }
+
+  string NextSeriesRoute { get { return SeriesRoute + nextSeriesToken; } }
+
+  OptimumData GetOptimumData(long id)
+  {
+      var or = optima.FirstOrDefault(o => o.data.OptimumDboId == id);
+      return or?.data;
+  }
+
+  async Task AddEvent()
+  {
+      newEvent.start = selectedDate;
+      newEvent.start = new DateTime(selectedDate.Year, selectedDate.Month, selectedDate.Day, selectedHour, selectedMinutes, 0).ToUniversalTime();
+      newEvent.optimumDboId = selectedOptimumId;
+
+      var request = ServiceEndpoint + "api/events";
+      var httpResponse = await Http.PostAsJsonAsync<EventData>(request, newEvent);
+      var contentResponse = await httpResponse.Content.ReadFromJsonAsync<EventResponse>();
+
+      var url = NavigationManager.BaseUri + contentResponse.links["routerLink"];
+      NavigationManager.NavigateTo(url);
+  }
+
+  private class OptimumData
+  {
+      public long OptimumDboId { get; set; }
+      public string name { get; set; }
+      public string strategies { get; set; }
+      public string positions { get; set; }
+  }
+
+  private class OptimumResponse
+  {
+      public OptimumData data { get; set; }
+  }
+
+  private class OptimaResponse
+  {
+      public OptimumResponse[] data { get; set; }
+  }
+
+  private class EventData
+  {
+      public string title { get; set; }
+      public string location { get; set; }
+      public DateTime start { get; set; }
+      public long optimumDboId { get; set; }
+  }
+
+  private class EventResponse
+  {
+      public EventData data { get; set; }
+      public Dictionary<string, string> links { get; set; }
+  }
+
+}

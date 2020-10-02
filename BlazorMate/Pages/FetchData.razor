@@ -1,0 +1,37 @@
+﻿@page "/fetchdata"
+
+@inject HttpClient Http
+@inherits FetchDataModel
+
+<h1>Call a Web API from Blazor</h1>
+
+<h2>Blazor Example</h2>
+
+<h3>Optimum Items</h3>
+
+@if (optima == null)
+{
+    <p>No optima found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Positions</th>
+                <th>Strategies</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in optima.Data)
+            {
+                <tr>
+                    <td>@item.Data.Name</td>
+                    <td>@item.Data.Positions</td>
+                    <td>@item.Data.Strategies</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

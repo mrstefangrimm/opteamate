@@ -1,7 +1,7 @@
 // https://embed.plnkr.co/l1oTNT/
 
-import { PipeTransform, Pipe } from '@angular/core';
-import { RegistrationData } from './registration.component';
+import { PipeTransform, Pipe } from '@angular/core'
+import { RegistrationData } from './registration.component'
 
 @Pipe({
   name: 'rosterfilter',

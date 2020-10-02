@@ -1,0 +1,361 @@
+﻿<!-- Copyright (c) 2020 Stefan Grimm. All rights reserved.
+     Licensed under the GPL. See LICENSE file in the project root for full license information.
+-->
+@page "/enroll/{eventtoken}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject ClipboardService ClipboardService
+@inject IJSRuntime JsRuntime
+
+<h1>T&auml;tschmeister</h1>
+
+@if (!string.IsNullOrEmpty(backRoute))
+{
+    <p>
+        <a href="@backRoute">Zur&uuml;ck zur Serie</a>
+    </p>
+}
+
+
+@if (currentEvent != null)
+{
+    <h3>@currentEvent.data.title, @currentEvent.data.location, @eventStartTime.ToLocalTime().ToShortDateString()</h3>
+
+    @if (!string.IsNullOrEmpty(backRoute))
+    {
+        <div>
+            Anzahl Registrierungen insgesamt: @stats.TotNumRegistrations
+            <br />
+            URL: @eventUrl
+            <button (click)="CopyLinkToClipboard()">In die Zwischenablage</button>
+        </div>
+    }
+}
+
+@if (stats.theOptima.Any())
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Position</th>
+                <th>Registriert</th>
+                <th>&Uuml;berz&auml;hlig</th>
+                <th>n&auml;chstes Optimum</th>
+                <th>Fehlend</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var i in stats.theOptima)
+            {
+                <tr>
+                    <td>@i.Key</td>
+                    <td>@i.Value.registrations</td>
+                    <td>@i.Value.remaining</td>
+                    <td>@i.Value.nextOptimum</td>
+                    <td>@i.Value.missing</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<form>
+    <label>Name</label>
+    <input @bind="@newRegistration.name" />
+    <label>Position</label>
+    <select @bind="selectedPosition">
+        @foreach (var item in positions)
+        {
+            <option value="@item">@item</option>
+        }
+    </select>
+    <button class="btn-primary" @onclick="AddRegistration">Hinzuf&uuml;gen</button>
+</form>
+
+@if (registrations != null)
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pos in positions)
+            {
+                @foreach (var reg in registrations.Where(r => r.position == pos && !r.transientScratch))
+                {
+                    <tr style="background-color: #abffab;">
+                        <td>@reg.name</td>
+                        <td>@reg.position</td>
+                        <td>
+                            <button color="standard" @onclick="(() => DeleteRegistration(reg.registrationDboId))">L&ouml;schen</button>
+                        </td>
+                    </tr>
+                }
+
+                @foreach (var reg in registrations.Where(r => r.position == pos && r.transientScratch))
+                {
+                    <tr style="background-color: #ffafaf;">
+                        <td>@reg.name</td>
+                        <td>@reg.position</td>
+                        <td>
+                            <button color="standard" @onclick="(() => DeleteRegistration(reg.registrationDboId))">L&ouml;schen</button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+  [Parameter]
+  public string EventToken { get; set; }
+
+  const string ServiceEndpoint = "http://localhost:4700/";
+  EventResponse currentEvent;
+  long eventId;
+  string eventUrl;
+  DateTime eventStartTime;
+  RegistrationData[] registrations;
+  string[] positions = new string[0];
+  StatisticData stats = new StatisticData();
+  RegistrationData newRegistration = new RegistrationData();
+  string selectedPosition;
+  string backRoute;
+
+  protected override async Task OnInitializedAsync()
+  {
+      eventUrl = NavigationManager.BaseUri + "enroll/" + EventToken;
+      await GetEventByEventToken();
+  }
+
+  //protected override async Task OnAfterRenderAsync(bool firstRender)
+  //{
+  //    if (firstRender)
+  //    {
+  //        await JsRuntime.InvokeVoidAsync("alert", "Die ULR ist bereits in der Zwischenablage.");
+  //    }
+  //}
+
+  async Task AddRegistration()
+  {
+      newRegistration.creationTime = DateTime.Now.ToUniversalTime();
+      newRegistration.position = selectedPosition;
+      string request = ServiceEndpoint +  "api/events/" + eventId + "/registrations";
+      await Http.PostAsJsonAsync<RegistrationData>(request, newRegistration);
+
+      await GetEvent();
+  }
+
+  async Task DeleteRegistration(long regId)
+  {
+      string request = ServiceEndpoint + "api/events/" + eventId + "/registrations/" + regId;
+      await Http.DeleteAsync(request);
+
+      await GetEvent();
+  }
+
+  async Task GetEventByEventToken()
+  {
+      string request = ServiceEndpoint + "api/events/byevent?token=" + EventToken;
+      var response = await Http.GetFromJsonAsync<EventsResponse>(request);
+
+      foreach (var evt in response.data)
+      {
+          if (evt.data.eventToken == new Guid(EventToken))
+          {
+              eventId = evt.data.eventDboId;
+              break;
+          }
+      }
+      await GetEvent();
+      //await CopyLinkToClipboard();
+  }
+
+  async Task GetEvent()
+  {
+      string request = ServiceEndpoint + "api/events/" + eventId;
+      var response = await Http.GetFromJsonAsync<EventResponse>(request);
+      currentEvent = response;
+      backRoute = currentEvent.links.ContainsKey("back") ? currentEvent.links["back"] : null;
+      eventStartTime = response.data.start;
+      if (response.registrations != null && response.registrations.data != null)
+      {
+          registrations = response.registrations.data;
+          stats.TotNumRegistrations = response.registrations.data.Length;
+      }
+      else
+      {
+          stats.TotNumRegistrations = 0;
+      }
+      await GetPositions(currentEvent.data.optimumDboId);
+  }
+
+  async Task GetPositions(long optId)
+  {
+      string request = ServiceEndpoint + "api/optima/" + optId;
+      var response = await Http.GetFromJsonAsync<OptimumResponse>(request);
+      var posStr = response.data.positions;
+      positions = posStr.Split(';');
+      selectedPosition = positions[0];
+      FillStats(response);
+  }
+
+  void FillStats(OptimumResponse response)
+  {
+      var stratStr = response.data.strategies;
+      var strategies = stratStr.Split(';');
+
+      foreach (var pos in positions)
+      {
+          stats.prevOptima[pos] = 0;
+      }
+
+      for (var s = 0; s < strategies.Length; s++)
+      {
+          var optimaStrs = strategies[s].Split('-');
+
+          for (var p = 0; p < positions.Length; p++)
+          {
+              var pos = this.positions[p];
+              var statData = new OptimumStatData();
+              statData.registrations = this.registrations == null ? 0 : this.registrations.Count(item => item.position == pos);
+
+              if (optimaStrs[p] == "*")
+              {
+                  statData.nextOptimum = statData.registrations + 1;
+                  statData.missing = 0;
+                  statData.remaining = 0;
+              }
+              else
+              {
+                  statData.nextOptimum = int.Parse(optimaStrs[p]);
+                  var diff = statData.nextOptimum - statData.registrations;
+                  statData.missing = Math.Max(0, diff);
+                  if ((diff < 0 && stats.prevOptima[pos] == 0) || (statData.missing == 0 && s == strategies.Length - 1))
+                  {
+                      statData.remaining = statData.registrations - statData.nextOptimum;
+                  }
+                  else
+                  {
+                      statData.remaining = statData.registrations - stats.prevOptima[pos];
+                  }
+              }
+              stats.theOptima[pos] = statData;
+          }
+          var continueCondition = (s != strategies.Length - 1);
+          foreach (var pos in positions)
+          {
+              var statData = this.stats.theOptima[pos];
+              var diff = statData.nextOptimum - statData.registrations;
+              if (diff > 0)
+              {
+                  continueCondition = false;
+              }
+              stats.prevOptima[pos] = statData.nextOptimum;
+          }
+          if (!continueCondition)
+          {
+              foreach (var pos in positions)
+              {
+                  var statData = this.stats.theOptima[pos];
+                  if (statData.remaining > 0 && this.registrations != null)
+                  {
+                      var regForPos = this.registrations.Where(item => item.position == pos).ToList();
+                      regForPos.Sort((a, b) => DateTime.Compare(b.creationTime, a.creationTime));
+                      for (var n = 0; n < statData.remaining; n++)
+                      {
+                          regForPos[n].transientScratch = true;
+                      }
+                  }
+              }
+              return;
+          }
+      }
+  }
+
+  async Task CopyLinkToClipboard()
+  {
+      // Writing to the clipboard may be denied, so you must handle the exception
+      try
+      {
+          await ClipboardService.WriteTextAsync(eventUrl);
+      }
+      catch
+      {
+          Console.WriteLine("Cannot write text to clipboard");
+      }
+  }
+
+  private class OptimumStatData
+  {
+      public int nextOptimum { get; set; }
+      public int registrations { get; set; }
+      public int missing { get; set; }
+      public int remaining { get; set; }
+  }
+
+  private class StatisticData
+  {
+      public int TotNumRegistrations { get; set; }
+      public Dictionary<string, OptimumStatData> theOptima = new Dictionary<string, OptimumStatData>();
+      public Dictionary<string, int> prevOptima = new Dictionary<string, int>();
+  }
+
+  private class OptimumData
+  {
+      public long optimaDboId { get; set; }
+      public string name { get; set; }
+      public string strategies { get; set; }
+      public string positions { get; set; }
+  }
+
+  private class OptimumResponse
+  {
+      public OptimumData data { get; set; }
+  }
+
+  private class RegistrationData
+  {
+      public long registrationDboId { get; set; }
+      public string name { get; set; }
+      public string position { get; set; }
+      public string sponsorOf { get; set; }
+      public DateTime creationTime { get; set; }
+      public bool transientScratch { get; set; }
+  }
+
+  private class RegistrationsResponse
+  {
+      public RegistrationData[] data { get; set; }
+      public Dictionary<string, string> links { get; set; }
+  }
+
+  private class EventData
+  {
+      public long eventDboId { get; set; }
+      public Guid eventToken { get; set; }
+      public string title { get; set; }
+      public string location { get; set; }
+      public DateTime start { get; set; }
+      public long optimumDboId { get; set; }
+  }
+
+  private class EventResponse
+  {
+      public EventData data { get; set; }
+      public Dictionary<string, string> links { get; set; }
+      public RegistrationsResponse registrations { get; set; }
+  }
+
+  private class EventsResponse
+  {
+      public EventResponse[] data { get; set; }
+      public Dictionary<string, string> links { get; set; }
+  }
+}

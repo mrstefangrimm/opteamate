@@ -4,19 +4,19 @@
 import { BrowserModule } from '@angular/platform-browser'
 import { NgModule } from '@angular/core'
 import { FormsModule } from '@angular/forms'
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http'
+import { HttpClientModule } from '@angular/common/http'
 import { RouterModule } from '@angular/router'
 
 import { AppComponent } from './app.component'
-import { NavMenuComponent } from './nav-menu/nav-menu.component'
-import { HomeComponent } from './home/home.component'
+import { HomeComponent } from './create/home.component'
+import { SeriesComponent } from './create/series.component'
 import { AdminComponent } from './admin/admin.component'
 import { RegistrationComponent } from './enroll/registration.component'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
+import { MatNativeDateModule } from '@angular/material/core'
 import { MatSliderModule } from '@angular/material/slider'
 import { MatInputModule } from '@angular/material/input'
 import { MatDatepickerModule } from '@angular/material/datepicker'
-import { MatNativeDateModule } from '@angular/material/core'
 import { MatSelectModule } from '@angular/material/select'
 import { MatButtonModule } from '@angular/material/button'
 import { RegistrationRosterPipe } from './enroll/registration-position-pipe'
@@ -25,8 +25,8 @@ import { RegistrationScratchPipe } from './enroll/registration-position-pipe'
 @NgModule({
   declarations: [
     AppComponent,
-    NavMenuComponent,
     HomeComponent,
+    SeriesComponent,
     AdminComponent,
     RegistrationComponent,
     RegistrationRosterPipe,
@@ -38,6 +38,7 @@ import { RegistrationScratchPipe } from './enroll/registration-position-pipe'
     FormsModule,
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
+      { path: 'series/:seriestoken', component: SeriesComponent },
       { path: 'admin', component: AdminComponent },
       { path: 'enroll/:eventtoken', component: RegistrationComponent }
     ]),

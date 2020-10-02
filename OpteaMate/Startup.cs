@@ -8,8 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
 
-namespace opteamate {
+namespace opteamate
+{
 
   public class Startup {
     public Startup(IConfiguration configuration) {
@@ -31,6 +33,12 @@ namespace opteamate {
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+
+      app.UseCors(policy =>
+        policy.WithOrigins("http://localhost:5000", "https://localhost:5001")
+          .AllowAnyMethod()
+          .WithHeaders(HeaderNames.ContentType));
+
       if (env.IsDevelopment()) {
         app.UseDeveloperExceptionPage();
       }
@@ -57,8 +65,14 @@ namespace opteamate {
 
         spa.Options.SourcePath = "ClientApp";
 
-        if (env.IsDevelopment()) {
+        if (env.IsDevelopment())
+        {
           spa.UseAngularCliServer(npmScript: "start");
+        }
+        else
+        {
+          // When starting Angular with ng serve or http-server -p 4200: 
+          spa.UseProxyToSpaDevelopmentServer("http://localhost:4200");
         }
       });
     }
