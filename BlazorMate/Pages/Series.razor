@@ -13,7 +13,7 @@
 }
 
 <p>
-    <a [routerLink]="['/']">Einzeln</a>
+    <a href="/">Einzeln</a>
     Serie
 </p>
 
@@ -38,7 +38,7 @@
             @foreach (var ev in events)
             {
                 <tr>
-                    <td>@ev.data.start.ToShortDateString()</td>
+                    <td>@ev.data.start.ToLocalTime().ToShortDateString() @ev.data.start.ToLocalTime().ToShortTimeString()</td>
                     <td>@ev.data.title</td>
                     <td>@ev.data.location</td>
                     <td>
@@ -133,7 +133,7 @@
       return or?.data;
   }
 
-  string GetLink(string eventToken)
+  string GetLink(Guid eventToken)
   {
       return "/enroll/" + eventToken;
   }
@@ -150,16 +150,18 @@
       newEvent.start = selectedDate;
       newEvent.start = new DateTime(selectedDate.Year, selectedDate.Month, selectedDate.Day, selectedHour, selectedMinutes, 0).ToUniversalTime();
       newEvent.optimumDboId = selectedOptimumId;
-      newEvent.seriesToken = SeriesToken;
+      newEvent.seriesToken = new Guid(SeriesToken);
 
       var request = ServiceEndpoint + "api/events";
-      await Http.PostAsJsonAsync<EventData>(request, newEvent);
+      var httpResponse = await Http.PostAsJsonAsync<EventData>(request, newEvent);
+      var contentResponse = await httpResponse.Content.ReadFromJsonAsync<EventResponse>();
+
       await GetEventsBySeriesToken();
   }
 
   async Task DeleteEvent(long evtId)
   {
-      var request = NavigationManager.BaseUri + "api/events/" + evtId;
+      var request = ServiceEndpoint + "api/events/" + evtId;
       await Http.DeleteAsync(request);
       await GetEventsBySeriesToken();
   }
@@ -185,12 +187,12 @@
   private class EventData
   {
       public long eventDboId { get; set; }
-      public string eventToken { get; set; }
+      public Guid eventToken { get; set; }
       public string title { get; set; }
       public string location { get; set; }
       public DateTime start { get; set; }
       public long optimumDboId { get; set; }
-      public string seriesToken { get; set; }
+      public Guid seriesToken { get; set; }
   }
 
   private class EventResponse

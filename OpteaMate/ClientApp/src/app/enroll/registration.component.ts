@@ -86,6 +86,7 @@ export class RegistrationComponent {
           this.stats.TotNumRegistrations = result.registrations.data.length
         }
         else {
+          this.registrations = RegistrationData[0]
           this.stats.TotNumRegistrations = 0
         }
         this.getPositions(this.currentEvent.data.optimumDboId)

@@ -8,7 +8,7 @@
   <a [routerLink]="['/'] + backRoute">Zur&uuml;ck zur Serie</a>
 </p>
 
-<h2 *ngIf="currentEvent">{{currentEvent.data.title}}, {{currentEvent.data.location}}, {{eventStartTime.toLocaleString()}}</h2>
+<h2 *ngIf="currentEvent">{{currentEvent.data.title}}, {{currentEvent.data.location}}, {{eventStartTime | date :'dd.MM.yyyy H:mm'}}</h2>
 
 <div *ngIf="!backRoute">
   Anzahl Registrierungen insgesamt: {{stats.TotNumRegistrations}}

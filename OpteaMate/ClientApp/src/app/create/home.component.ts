@@ -53,7 +53,7 @@ export class HomeComponent {
   optima: OptimumResponse[]
 
   selectedOptimum: OptimumResponse
-  selectedDate = new FormControl(new Date());
+  selectedDate = new Date();
   selectedHour: number = 19;
   selectedMinutes: number = 0;
   nextSeriesToken: string
@@ -73,7 +73,7 @@ export class HomeComponent {
   }
 
   addEvent() {
-    this.newEvent.start = <Date>this.selectedDate.value
+    this.newEvent.start = this.selectedDate
     this.newEvent.optimumDboId = this.selectedOptimum.data.optimumDboId
     this.newEvent.start.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
 

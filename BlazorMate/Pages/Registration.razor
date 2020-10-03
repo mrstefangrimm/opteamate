@@ -19,9 +19,9 @@
 
 @if (currentEvent != null)
 {
-    <h3>@currentEvent.data.title, @currentEvent.data.location, @eventStartTime.ToLocalTime().ToShortDateString()</h3>
+    <h3>@currentEvent.data.title, @currentEvent.data.location, @eventStartTime.ToLocalTime().ToShortDateString(), @eventStartTime.ToLocalTime().ToShortTimeString()</h3>
 
-    @if (!string.IsNullOrEmpty(backRoute))
+    @if (string.IsNullOrEmpty(backRoute))
     {
         <div>
             Anzahl Registrierungen insgesamt: @stats.TotNumRegistrations
@@ -191,6 +191,7 @@
       }
       else
       {
+          registrations = null;
           stats.TotNumRegistrations = 0;
       }
       await GetPositions(currentEvent.data.optimumDboId);

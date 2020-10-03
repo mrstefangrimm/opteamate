@@ -56,7 +56,7 @@ export class SeriesComponent {
   optima: OptimumResponse[]
   selectedHour: number = 19;
   selectedMinutes: number = 0;
-  selectedDate = new FormControl(new Date());
+  selectedDate = new Date();
   seriesUrl: string
 
   constructor(private route: ActivatedRoute,
@@ -82,14 +82,22 @@ export class SeriesComponent {
     return "/enroll/" + eventToken
   }
 
+  getLocaleDt(dat: Date) {
+    let dt = new Date(dat)
+    let dtMs = dt.getTime() - dt.getTimezoneOffset() * 60000
+    dt.setTime(dtMs)
+    return dt
+  }
+
   addEvent() {
-    this.newEvent.start = <Date>this.selectedDate.value
-    this.newEvent.optimumDboId = this.selectedOptimum.data.optimumDboId
+    this.newEvent.start = this.selectedDate
     this.newEvent.start.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
+    console.info(this.newEvent.start)
+    this.newEvent.optimumDboId = this.selectedOptimum.data.optimumDboId
     this.newEvent.seriesToken = this.seriesToken
 
     let request = this.baseUrl + 'api/events'
-    this.http.post<EventResponse>(request, this.newEvent).subscribe(result => {
+    this.http.post<EventData>(request, this.newEvent).subscribe(result => {
       this.getEventsBySeriesToken()
     }, error => console.error(error))
   }
