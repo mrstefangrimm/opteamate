@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace opteamate {
+namespace opteamate
+{
 
   [Route("api/[controller]")]
   [ApiController]
@@ -47,8 +48,8 @@ namespace opteamate {
       new OptimumData {
         OptimumDboId = 6,
         Name = "GV",
-        Strategies = "1-1-1-1-1;1-1-1-1-*",
-        Positions = "Präsident;Kassier;Protokolführer;Stimmenzähler;Beisitzer"
+        Strategies = "1-1-1-1-0;1-1-1-1-*",
+        Positions = "Vorsitzender;Kassier;Stimmenzähler;Protokollführer;Beisitzer"
       }};
 
     public OptimaController(ILogger<OptimaController> logger) {
@@ -57,7 +58,7 @@ namespace opteamate {
 
     // GET: api/optima
     [HttpGet]
-    public object GetOptima() {
+    public IActionResult GetOptima() {
       var optimaDto = new OptimaDto();
       optimaDto.AddLink(LinkType.self, Url.ActionLink(nameof(GetOptima)));
       optimaDto.AddAction(ActionType.GET, "this");
@@ -66,18 +67,18 @@ namespace opteamate {
       foreach (var optimum in _optima) {
         optimaDto.Data.Add(CreateOptimumDto(optimum));
       }
-      return optimaDto;
+      return Ok(optimaDto);
     }
 
     // GET: api/optima/2
     [HttpGet("{id}")]
-    public object GetOptimum(long id) {
+    public IActionResult GetOptimum(long id) {
 
       var optimum = _optima.First(o => o.OptimumDboId == id);
       if (optimum == null) { return NotFound(); }
 
       var optimaDto = CreateOptimumDto(optimum);
-      return optimaDto;
+      return Ok(optimaDto);
     }
 
     private OptimumDto CreateOptimumDto(OptimumData data) {

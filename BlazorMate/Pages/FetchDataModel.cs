@@ -20,7 +20,7 @@ namespace BlazorMate.Pages
 
     private async Task GetItems()
     {
-      var server = new HttpClient
+      using var server = new HttpClient
       {
         BaseAddress = new Uri(ServiceEndpoint)
       };

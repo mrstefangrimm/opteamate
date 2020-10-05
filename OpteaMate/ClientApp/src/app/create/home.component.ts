@@ -3,6 +3,7 @@
 //
 import { Component, Inject, OnInit  } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
+import { Router } from '@angular/router'
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms'
 import { NativeDateAdapter, DateAdapter, ErrorStateMatcher } from '@angular/material/core'
 import { Guid } from '../common/guid.component';
@@ -60,6 +61,7 @@ export class HomeComponent {
 
   constructor(
     private readonly http: HttpClient,
+    private readonly router: Router,
     @Inject('BASE_URL') private readonly baseUrl: string) {
 
     let request = this.baseUrl + 'api/optima/'
@@ -80,8 +82,8 @@ export class HomeComponent {
     let request = this.baseUrl + 'api/events'
     this.http.post<EventResponse>(request, this.newEvent).
       subscribe(result => {
-        let url = this.baseUrl + result.links['routerLink']
-        window.location.href = url
+        console.info(result.data.eventToken)
+        this.router.navigate(['/enroll/' + result.data.eventToken])
       }, error => console.error(error))
   }
 
@@ -103,6 +105,7 @@ interface OptimaResponse {
 }
 
 export class EventData {
+  eventToken: string
   title: string
   location: string
   start: Date

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace opteamate
 {
@@ -21,7 +22,7 @@ namespace opteamate
 
     // GET: api/events
     [HttpGet]
-    public object GetEvents() {
+    public IActionResult GetEvents() {
 
       var evtsDbo = _context.Events.ToList();
 
@@ -30,8 +31,7 @@ namespace opteamate
       eventsDto.AddAction(ActionType.GET, "this");
 
       if (evtsDbo.Count > 0) {
-        // Do not load registration to reduce network traffic
-        // _context.Registrations.Load();
+        // Do not load registration to reduce network traffic _context.Registrations.Load();
 
         eventsDto.Data = new List<EventDto>();
 
@@ -40,29 +40,26 @@ namespace opteamate
           eventsDto.Data.Add(evtDto);
         }
       }
-      return eventsDto;
+      return Ok(eventsDto);
     }
 
     // GET: api/events/5
     [HttpGet("{id}")]
-    public object GetEvent(long id) {
-
+    public async Task<IActionResult> GetEvent(long id) {
+      // Not sure if async is makes a difference:
+      // https://stackoverflow.com/questions/30042791/entity-framework-savechanges-vs-savechangesasync-and-find-vs-findasync
+      // And have you ever seen how many threads are available in a typical ASP.Net server? It's like tens of thousands
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
-      _context.Registrations.Load();
 
+      await _context.Registrations.LoadAsync();
       var evtDto = CreateEventDto(evtDbo);
-      return evtDto;
-
-      //var evt = _context.EventDbo.Find(id);
-      //if (evt == null) { return NotFound(); }
-      //// _context.RegistrationData.Load();
-      //return GetEventDto(evt);
+      return Ok(evtDto);
     }
 
     //GET "http://localhost:5000/api/events/bytoken?key=event&token=0000-abcd"
     [HttpGet("byToken")]
-    public object GetEvents(string key, Guid token) {
+    public IActionResult GetEvents(string key, Guid token) {
 
       Func<EventDbo, bool> comp = null;
       if (key == "event") { comp = a => a.EventToken == token; }
@@ -80,14 +77,14 @@ namespace opteamate
           var evtDto = CreateEventDto(evtDbo);
           eventsDto.Data.Add(evtDto);
         }
-        return eventsDto;
+        return Ok(eventsDto);
       }      
       return NoContent();
     }
 
     //GET "http://localhost:5000/api/events/byevent?token=0000-abcd"
     [HttpGet("byEvent")]
-    public object GetEventsByEventToken(Guid token) {
+    public IActionResult GetEventsByEventToken(Guid token) {
       var eventsDto = new EventsDto();
       eventsDto.Data = new List<EventDto>();
 
@@ -104,12 +101,12 @@ namespace opteamate
           eventsDto.Data.Add(evtDto);
         }
       }
-      return eventsDto;
+      return Ok(eventsDto);
     }
 
     //GET "http://localhost:5000/api/events/byseries?token=0000-abcd"
     [HttpGet("bySeries")]
-    public object GetEventsBySeriesToken(Guid token) {
+    public IActionResult GetEventsBySeriesToken(Guid token) {
       var eventsDto = new EventsDto();
       eventsDto.Data = new List<EventDto>();
 
@@ -121,40 +118,34 @@ namespace opteamate
         var evtDto = CreateEventDto(evtDbo);
         eventsDto.Data.Add(evtDto);
       }
-      return eventsDto;
+      return Ok(eventsDto);
     }
 
     [HttpPost]
-    public object PostEvent(EventData evt) {
+    public async Task<IActionResult> PostEvent(EventData evt) {
 
       var evtDbo = new EventDbo();
       evt.EventToken = Guid.NewGuid();
       evtDbo.CopyFrom(evt);
-
       _context.Events.Add(evtDbo);
-      _context.SaveChanges();
 
-      return CreateEventDto(evtDbo);
-      //return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
+      var saving = _context.SaveChangesAsync();
+      EventDto evtDto = CreateEventDto(evtDbo);
+      await saving; 
 
-      //if (evt.Registrations != null) {
-      //  foreach (var reg in evt.Registrations) {
-      //    reg.EventId = evt.Id;
-      //  }
-      //}
-      //int modifiedObjs = _context.SaveChanges();
-      //var eventDto = GetEventDto(evt);
-      //return CreatedAtAction(nameof(GetEvent), new { id = evt.EventDataId }, eventDto);
+      return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
     }
 
     // POST: api/events/1/registrations
     [HttpPost("{id}/registrations")]
-    public object PostEventRegistration(long id, RegistrationData reg) {
+    public async Task<IActionResult> PostEventRegistration(long id, RegistrationData reg) {
 
-      var evtDbo = _context.Events.Find(id);
+      var finding = _context.Events.FindAsync(id);
+      var loading = _context.Registrations.LoadAsync();
+
+      var evtDbo = await finding;
       if (evtDbo == null) { return NotFound(); }
-
-      _context.Registrations.Load();
+      await loading;
 
       if (evtDbo.Registrations == null) { evtDbo.Registrations = new List<RegistrationDbo>(); }
       var regDbo = new RegistrationDbo();
@@ -162,30 +153,16 @@ namespace opteamate
       regDbo.CopyFrom(reg);
 
       _context.Update(evtDbo);
-      var modified = _context.SaveChanges();
+      var saving = _context.SaveChangesAsync();
+      var evtDto = CreateEventDto(evtDbo);
+      await saving;
 
-      return CreateEventDto(evtDbo);
-      //return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
-
-
-      //var evtData = _context.EventData.Find(id);
-      //if (evtData == null) { return NotFound(); }
-
-      //reg.EventId = evtData.Id;
-
-      //_context.RegistrationData.Load();
-
-      //if (evtData.Registrations == null) { evtData.Registrations = new List<RegistrationData>(); }
-      //evtData.Registrations.Add(reg);
-      //_context.Update(evtData);
-
-      //var modified = _context.SaveChanges();
-      //return GetEventDto(evtData);
+      return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
     }
 
     // PUT: api/events/5
     [HttpPut("{id}")]
-    public object PutEvent(long id, EventData evt) {
+    public IActionResult PutEvent(long id, EventData evt) {
 
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
@@ -194,7 +171,7 @@ namespace opteamate
       _context.Entry(evtDbo).State = EntityState.Modified;
 
       try {
-        var res = _context.SaveChanges();
+        _context.SaveChanges();
       }
       catch (DbUpdateConcurrencyException) {
         if (!_context.Events.Any(e => e.EventDboId == id)) {
@@ -204,23 +181,22 @@ namespace opteamate
           throw;
         }
       }
-
       return NoContent();
     }
 
     // PUT: api/events/5/registrations/1
     [HttpPut("{id}/registration/{regid}")]
-    public object PutEventRegistration(long id, long regid, RegistrationData reg) {
+    public IActionResult PutEventRegistration(long id, long regid, RegistrationData reg) {
 
       if (!_context.Events.Any(e => e.EventDboId == id)) { return NotFound(); }
+
       var regDbo = _context.Registrations.Find(regid);
       if (regDbo == null) { return NotFound(); }
-
       regDbo.CopyFrom(reg);
       _context.Entry(regDbo).State = EntityState.Modified;
 
       try {
-        var res = _context.SaveChanges();
+        _context.SaveChanges();
       }
       catch (DbUpdateConcurrencyException) {
         if (!_context.Registrations.Any(e => e.RegistrationDboId == id)) {
@@ -236,7 +212,7 @@ namespace opteamate
 
     // DELETE: api/events/5
     [HttpDelete("{id}")]
-    public object DeleteEvent(long id) {
+    public IActionResult DeleteEvent(long id) {
 
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
@@ -247,27 +223,29 @@ namespace opteamate
       if (evtDbo.Registrations != null) {
         _context.Registrations.RemoveRange(evtDbo.Registrations.ToArray());
       }
-
-      var modified = _context.SaveChanges();
-
+      
+      _context.SaveChanges();
       return NoContent();
     }
 
     // DELETE: api/events/5/registrations/4
     [HttpDelete("{id}/registrations/{regid}")]
-    public object DeleteEventRegistration(long id, long regid) {
+    public async Task<IActionResult> DeleteEventRegistration(long id, long regid) {
 
-      var evtDbo = _context.Events.Find(id);
-      if (evtDbo == null) { return NotFound(); }
+      var findingEvt = _context.Events.FindAsync(id);
+      var findingReg = _context.Registrations.FindAsync(regid);
 
-      var regDbo = _context.Registrations.Find(regid);
+      var regDbo = await findingReg;
       if (regDbo == null) { return NotFound(); }
-
-      evtDbo.Registrations.Remove(regDbo);
       _context.Registrations.Remove(regDbo);
+
+      var evtDbo = await findingEvt;
+      if (evtDbo == null) { return NotFound(); }
+      evtDbo.Registrations.Remove(regDbo);
+
       _context.Update(evtDbo);
 
-      var modified = _context.SaveChanges();
+      _context.SaveChanges();
       return NoContent();
     }
 
@@ -309,13 +287,6 @@ namespace opteamate
       regDto.AddLink(LinkType.self, Url.ActionLink(nameof(GetEvent), null, new { id = regDbo.EventDboId }));
       return regDto;
     }
-
-    //  private HypermediaDtoBase<EventDto> GetEventDto(EventDto evtData) {
-    //    var eventDto = HypermediaUtil.CreateHypermediaDto(evtData);
-    //// eventDto.Data.Registrations
-    //    eventDto.AddLink(LinkType.self, Url.ActionLink(nameof(GetEvent), null, new { id = evtData.EventDataId }));
-    //    return eventDto;
-    //  }    
 
   }
 }
