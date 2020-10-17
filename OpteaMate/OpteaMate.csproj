@@ -82,4 +82,8 @@
     <TypeScriptSourceRoot />
   </PropertyGroup>
 
+  <PropertyGroup>
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+  </PropertyGroup>
+  
 </Project>
