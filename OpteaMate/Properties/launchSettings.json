@@ -1,4 +1,4 @@
-﻿{
+{
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
@@ -13,30 +13,29 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "ancmHostingModel": "OutOfProcess"
     },
     "opteamate-VS": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:4700",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "applicationUrl": "http://localhost:4700"
     },
     "opteamate-NG": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:4700",
-      "environmentVariables": {
-      }
+      "applicationUrl": "http://localhost:4700"
     },
     "opteamate-Public": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://0.0.0.0:4700",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "applicationUrl": "http://0.0.0.0:4700"
     }
   }
 }

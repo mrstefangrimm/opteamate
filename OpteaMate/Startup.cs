@@ -10,8 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 
-namespace opteamate
-{
+namespace opteamate {
 
   public class Startup {
     public Startup(IConfiguration configuration) {
@@ -68,12 +67,10 @@ namespace opteamate
         if (env.IsDevelopment())
         {
           spa.UseAngularCliServer(npmScript: "start");
-        }
-        else
-        {
           // When starting Angular with ng serve or http-server -p 4200: 
-          spa.UseProxyToSpaDevelopmentServer("http://localhost:4200");
+          // spa.UseProxyToSpaDevelopmentServer("http://localhost:4200");
         }
+       
       });
     }
   }
