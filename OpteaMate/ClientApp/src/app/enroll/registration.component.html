@@ -39,6 +39,8 @@
   </tbody>
 </table>
 
+<hr/>
+
 <form>
   <div>
 
@@ -54,12 +56,12 @@
       </mat-select>
     </mat-form-field>
 
-    <button mat-raised-button color="primary" (click)="addRegistration()">Hinzuf&uuml;gen</button>
+    <button *ngIf="registrations && registrations.permissions.includes('post')" mat-raised-button color="primary" (click)="addRegistration()">Bin d&auml;bi</button>
 
   </div>
 </form>
 
-<table *ngIf="registrations">
+<table *ngIf="stats.TotNumRegistrations > 0">
   <thead>
     <tr>
       <th>Name</th>
@@ -68,18 +70,18 @@
     </tr>
   </thead>
   <tbody *ngFor="let p of positions">
-    <tr *ngFor="let reg of registrations | rosterfilter:p" style="background-color: #abffab;">
-      <td>{{reg.name}}</td>
-      <td>{{reg.position}}</td>
+    <tr *ngFor="let reg of registrations.data | rosterfilter:p" style="background-color: #abffab;">
+      <td>{{reg.data.name}}</td>
+      <td>{{reg.data.position}}</td>
       <td>
-        <button mat-raised-button color="standard" (click)="deleteRegistration(reg.registrationDboId)">L&ouml;schen</button>
+        <button *ngIf="reg.permissions.includes('delete')" mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
       </td>
     </tr>
-    <tr *ngFor="let reg of registrations | scratchfilter:p" style="background-color: #ffafaf;">
-      <td>{{reg.name}}</td>
-      <td>{{reg.position}}</td>
+    <tr *ngFor="let reg of registrations.data | scratchfilter:p" style="background-color: #ffafaf;">
+      <td>{{reg.data.name}}</td>
+      <td>{{reg.data.position}}</td>
       <td>
-        <button mat-raised-button color="standard" (click)="deleteRegistration(reg.registrationDboId)">L&ouml;schen</button>
+        <button *ngIf="reg.permissions.includes('delete')" mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
       </td>
     </tr>
   </tbody>

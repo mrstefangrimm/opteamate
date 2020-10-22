@@ -2,14 +2,13 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace opteamate
-{
+namespace opteamate {
   public class RegistrationData {
-    public long RegistrationDboId { get; set; }
-    public string Name { get; set; }
-    public string Position { get; set; }
+    [Required] public string Name { get; set; }
+    [Required] public string Position { get; set; }
+    [Required] public DateTime CreationTime { get; set; }
     public string SponsorOf { get; set; }
-    public DateTime CreationTime { get; set; }
   }
 }

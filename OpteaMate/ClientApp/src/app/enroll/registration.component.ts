@@ -2,7 +2,7 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 import { Component, Inject } from '@angular/core'
-import { ActivatedRoute } from '@angular/router'
+import { ActivatedRoute, Router } from '@angular/router'
 import { HttpClient } from '@angular/common/http'
 
 @Component({
@@ -11,12 +11,16 @@ import { HttpClient } from '@angular/common/http'
 })
 
 export class RegistrationComponent {
+
+  eventsUri: string
+  optimaUri: string
+
   currentEvent: EventResponse
-  registrations: RegistrationData[]
+  registrations: RegistrationsResponse
 
   newRegistration: RegistrationData = new RegistrationData()
-  eventToken: string = "N/A"
-  eventId: string = "-1"
+  eventToken: string
+  eventId: string
   eventStartTime: Date
   stats: StatisticData = new StatisticData
   positions: string[]
@@ -27,13 +31,27 @@ export class RegistrationComponent {
   constructor(
     private route: ActivatedRoute,
     private readonly http: HttpClient,
+    private readonly router: Router,
     @Inject('BASE_URL') private readonly baseUrl: string) {
 
-    this.route.params.subscribe(params => {
-      this.eventToken = params.eventtoken
-      this.eventUrl = this.baseUrl + "enroll/" + this.eventToken
-      this.getEventByEventToken()
-    })
+    let tocRequest = this.baseUrl + 'api/toc'
+    this.http.get<TocResponse>(tocRequest)
+      .subscribe(result => {
+        console.log(result)
+        this.eventsUri = result.hrefs['events']
+        this.optimaUri = result.hrefs['optima']
+        console.log(this.eventsUri)
+        console.log(this.optimaUri)
+
+        this.route.params.subscribe(params => {
+          this.eventToken = params.eventtoken
+          this.eventUrl = this.baseUrl + "enroll/" + this.eventToken
+          this.getEventByEventToken()
+        })
+
+      }, error => console.error(error))   
+
+  
   }
 
   copyLinkToClipboard() {
@@ -53,7 +71,7 @@ export class RegistrationComponent {
   addRegistration() {
     this.newRegistration.creationTime = new Date
     this.newRegistration.position = this.selectedPosition
-    let request = this.baseUrl + 'api/events/' + this.eventId + "/registrations"
+    let request = this.eventsUri + this.eventId + "/registrations"
     this.http.post<RegistrationData>(request, this.newRegistration)
       .subscribe(result => {
         this.getEvent()
@@ -61,7 +79,8 @@ export class RegistrationComponent {
   }
     
   deleteRegistration(regId: string) {
-    let request = this.baseUrl + 'api/events/' + this.eventId + "/registrations/" + regId
+    console.info(regId)
+    let request = this.eventsUri + this.eventId + "/registrations/" + regId
     this.http.delete(request)
       .subscribe(result => {
         this.getEvent()
@@ -69,32 +88,27 @@ export class RegistrationComponent {
   }
 
   getEvent() {
-    let request = this.baseUrl + 'api/events/' + this.eventId
+    let request = this.eventsUri + this.eventId
     this.http.get<EventResponse>(request)
       .subscribe(result => {
         console.log(result)
         this.currentEvent = result
-        this.backRoute = this.currentEvent.links['back']
+        this.backRoute = this.currentEvent.hrefs['back']
 
         let dt = new Date(result.data.start)
         let dtMs = dt.getTime() - dt.getTimezoneOffset() * 60000
         dt.setTime(dtMs)
         this.eventStartTime = dt
 
-        if (result.registrations != null && result.registrations.data != null) {
-          this.registrations = result.registrations.data
-          this.stats.TotNumRegistrations = result.registrations.data.length
-        }
-        else {
-          this.registrations = RegistrationData[0]
-          this.stats.TotNumRegistrations = 0
-        }
-        this.getPositions(this.currentEvent.data.optimumDboId)
+        this.registrations = result.registrations
+        this.stats.TotNumRegistrations = result.registrations.data.length
+
+        this.getPositions(this.currentEvent.data.optimumId)
       }, error => console.error(error))
   }
 
   getEventByEventToken() {
-    let request = this.baseUrl + 'api/events/byevent?token=' + this.eventToken
+    let request = this.eventsUri + 'byevent?token=' + this.eventToken
     this.http.get<EventsResponse>(request)
       .subscribe(result => {
         console.log(result)
@@ -103,19 +117,28 @@ export class RegistrationComponent {
           console.log(item.data.eventToken)
           console.log(this.eventToken)
           if (item.data.eventToken === this.eventToken) {
-            console.log(item.data.eventDboId)
-            this.eventId = item.data.eventDboId
+            console.log(item.id)
+            this.eventId = item.id
             console.log(this.eventId)
           }
         })
-        this.getEvent()
+        if (this.eventId != null) {
+          this.getEvent()
+        }
+        else {
+          // event expected
+          this.router.navigate(['/404'])
+        }
         //this.copyLinkToClipboard();
         //alert("Die ULR ist bereits in der Zwischenablage.")
-      }, error => console.error(error))
+      }, error => {
+        console.error(error)
+        this.router.navigate(['/404'])
+      })
   }
 
   getPositions(optId: number) {
-    let request = this.baseUrl + 'api/optima/' + optId
+    let request = this.optimaUri + optId
     this.http.get<OptimumResponse>(request)
       .subscribe(result => {
         console.log(result)
@@ -140,7 +163,7 @@ export class RegistrationComponent {
       for (let p = 0; p < this.positions.length; p++) {
         let pos = this.positions[p]
         let statData = new OptimumStatData
-        statData.registrations = this.registrations == null ? 0 : this.registrations.filter(item => item.position == pos).length
+        statData.registrations = this.registrations == null ? 0 : this.registrations.data.filter(item => item.data.position == pos).length
         if (optimaStrs[p] == '*') {
           statData.nextOptimum = statData.registrations + 1
           statData.missing = 0
@@ -175,11 +198,11 @@ export class RegistrationComponent {
         this.positions.forEach(pos => {
           let statData = this.stats.theOptima[pos]
           if (statData.remaining > 0 && this.registrations != null) {
-            let regForPos =  this.registrations.filter(item => item.position == pos)
-            regForPos.sort((a, b) => +new Date(b.creationTime) - +new Date(a.creationTime))
+            let regForPos =  this.registrations.data.filter(item => item.data.position == pos)
+            regForPos.sort((a, b) => +new Date(b.data.creationTime) - +new Date(a.data.creationTime))
 
             for (let n = 0; n < statData.remaining; n++) {
-              regForPos[n].transientScratch = true
+              regForPos[n].data.transientScratch = true
             }
           }
 
@@ -204,7 +227,6 @@ class StatisticData {
 }
 
 interface OptimumData {
-  optimaDboId: number
   name: string
   strategies: string
   positions: string
@@ -215,7 +237,6 @@ interface OptimumResponse {
 }
 
 export class RegistrationData {
-  registrationDboId: number
   name: string
   position: string
   sponsorOf: string
@@ -223,27 +244,39 @@ export class RegistrationData {
   transientScratch: boolean
 }
 
+export interface RegistrationResponse {
+  id: string
+  data: RegistrationData
+  hrefs: { [key: string]: string }
+  permissions: [string]
+}
+
 interface RegistrationsResponse {
-  data: RegistrationData[]
-  links: { [key: string]: string }
+  data: RegistrationResponse[]
+  hrefs: { [key: string]: string }
+  permissions: [string]
 }
 
 interface EventData {
-  eventDboId: string
   eventToken: string
   title: string
   location: string
   start: Date
-  optimumDboId: number
+  optimumId: number
 }
 
 interface EventResponse {
+  id: string
   data: EventData
-  links: { [key: string]: string }
+  hrefs: { [key: string]: string }
   registrations: RegistrationsResponse
 }
 
 interface EventsResponse {
   data: EventResponse[]
-  links: { [key: string]: string }
+  hrefs: { [key: string]: string }
+}
+
+interface TocResponse {
+  hrefs: { [key: string]: string; };
 }

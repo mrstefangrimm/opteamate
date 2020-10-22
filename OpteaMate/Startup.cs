@@ -23,6 +23,25 @@ namespace opteamate {
     public void ConfigureServices(IServiceCollection services) {
       services.AddControllersWithViews();
       services.AddDbContext<OpteaMateContext>(opt => opt.UseSqlite("DefaultConnection"));
+      
+      // https://docs.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-nswag?view=aspnetcore-3.1&tabs=visual-studio
+      services.AddSwaggerDocument(
+        config => {
+          config.PostProcess = document => {
+            document.Info.Version = "v1";
+            document.Info.Title = "OpteaMate API";
+            document.Info.Description = "Schedule your team events.";
+            document.Info.Contact = new NSwag.OpenApiContact {
+              Name = "Stefan Grimm",
+              Email = "stefangrimm@hotmail.com",
+              Url = string.Empty // "https://twitter.com/potus"
+            };
+            document.Info.License = new NSwag.OpenApiLicense {
+              Name = "Use under CC BY-NC-ND 4.0",
+              Url = "https://creativecommons.org/licenses/by-nc-nd/4.0/"
+            };
+          };
+        });
 
       // In production, the Angular files will be served from this directory
       services.AddSpaStaticFiles(configuration => {
@@ -46,6 +65,9 @@ namespace opteamate {
       }
 
       app.UseStaticFiles();
+      app.UseOpenApi();
+      app.UseSwaggerUi3();
+
       if (!env.IsDevelopment()) {
         app.UseSpaStaticFiles();
       }

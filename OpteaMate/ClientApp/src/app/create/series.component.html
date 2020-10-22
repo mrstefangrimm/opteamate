@@ -2,7 +2,7 @@
      Licensed under the GPL. See LICENSE file in the project root for full license information.
 -->
 <h1>T&auml;tschmeister</h1>
-<h2 *ngIf="!events.length">Neue Serie</h2>
+<h2 *ngIf="events && !events.length">Neue Serie</h2>
 
 <p>
   <a [routerLink]="['/']">Einzeln</a>
@@ -14,12 +14,14 @@
   <button mat-raised-button color="standard" (click)="copyLinkToClipboard()">In die Zwischenablage</button>
 </div>
 
-<table *ngIf="events.length">
+<table *ngIf="events && events.length">
   <thead>
     <tr>
       <th>Wann</th>
       <th>Was</th>
       <th>Wo</th>
+      <th>Anz. Teilnehmer</th>
+      <th>Nimmt wer was mit?</th>
       <th>Details</th>
       <th>...</th>
     </tr>
@@ -29,15 +31,21 @@
       <td>{{getLocaleDt(ev.data.start) | date :'dd.MM.yyyy H:mm'}}</td>
       <td>{{ev.data.title}}</td>
       <td>{{ev.data.location}}</td>
-      <td> <a [routerLink]="getLink(ev.data.eventToken)">Registrieren...</a></td>
+      <td>{{ev.data.registrationsCount}}</td>
+      <td>{{ev.data.hasSponsors}}</td>
+      <td *ngIf="ev.registrations.permissions.includes('post')"> <a [routerLink]="getLink(ev.data.eventToken)">Registrieren...</a></td>
+      <td *ngIf="!ev.registrations.permissions.includes('post')"> <a [routerLink]="getLink(ev.data.eventToken)">Teilnahmen...</a></td>
       <td>
-        <button mat-raised-button color="standard" (click)="deleteEvent(ev.data.eventDboId)">L&ouml;schen</button>
+        <button *ngIf="ev.permissions.includes('delete')" mat-raised-button color="standard" (click)="deleteEvent(ev.id)">L&ouml;schen</button>
       </td>
     </tr>
   </tbody>
 </table>
 <br />
-<div>
+<hr />
+<h2>Neu abmache:</h2>
+
+<div *ngIf="selectedOptimum">
   <mat-form-field>
     <mat-label>Schema</mat-label>
     <mat-select [(value)]="selectedOptimum">
@@ -95,5 +103,5 @@
   </mat-form-field>
 </div>
 <p *ngIf="!matcher.inError">
-  <button mat-raised-button color="primary" (click)="addEvent()">Hinzuf&uuml;gen</button>
+  <button *ngIf="postPermission" mat-raised-button color="primary" (click)="addEvent()">Hinzuf&uuml;gen</button>
 </p>

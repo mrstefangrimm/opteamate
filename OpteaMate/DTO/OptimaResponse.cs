@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 
 namespace opteamate {
-  public class EventsDto : HypermediaDtoBase<ICollection<EventDto>> {
+  public class OptimaResponse : WebApiResponseBase<ICollection<OptimumResponse>> {
+    public override string Type => WebApiResponseType.Collection.ToString();
   }
 }

@@ -49,10 +49,14 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 
 export class HomeComponent {
 
+  eventsUri: string
+  optimaUri: string
+
   matcher = new MyErrorStateMatcher();
   newEvent: EventData = new EventData()
   optima: OptimumResponse[]
 
+  postPermission: boolean
   selectedOptimum: OptimumResponse
   selectedDate = new Date();
   selectedHour: number = 19;
@@ -64,39 +68,58 @@ export class HomeComponent {
     private readonly router: Router,
     @Inject('BASE_URL') private readonly baseUrl: string) {
 
-    let request = this.baseUrl + 'api/optima/'
-    this.http.get<OptimaResponse>(request)
+    let tocRequest = this.baseUrl + 'api/toc'
+    this.http.get<TocResponse>(tocRequest)
       .subscribe(result => {
         console.log(result)
-        this.optima = result.data
-        this.selectedOptimum = this.optima[1]
-        this.nextSeriesToken = Guid.newGuid()
+        this.eventsUri = result.hrefs['events']
+        this.optimaUri = result.hrefs['optima']
+        console.log(this.eventsUri)
+        console.log(this.optimaUri)
+
+        this.http.get<OptimaResponse>(this.optimaUri)
+          .subscribe(result => {
+            console.log(result)
+            this.optima = result.data
+            this.selectedOptimum = this.optima[0]
+            this.nextSeriesToken = Guid.newGuid()
+          }, error => console.error(error))
+
+        this.http.get<EventsInfoResponse>(this.eventsUri + 'info')
+          .subscribe(result => {
+            console.log(result)
+            this.postPermission = result.permissions.includes('post')
+          }, error => console.error(error))
+
       }, error => console.error(error))
+
+
+    
   }
 
   addEvent() {
     this.newEvent.start = this.selectedDate
-    this.newEvent.optimumDboId = this.selectedOptimum.data.optimumDboId
+    this.newEvent.optimumId = this.selectedOptimum.id
     this.newEvent.start.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
 
-    let request = this.baseUrl + 'api/events'
-    this.http.post<EventResponse>(request, this.newEvent).
+    this.http.post<EventResponse>(this.eventsUri, this.newEvent).
       subscribe(result => {
         console.info(result.data.eventToken)
-        this.router.navigate(['/enroll/' + result.data.eventToken])
+        let selfRoute = result.hrefs['self']
+        console.info(selfRoute)
+        this.router.navigate([selfRoute])
       }, error => console.error(error))
   }
-
 }
 
 interface OptimumData {
-  optimumDboId: number
   name: string
   strategies: string
   positions: string
 }
 
 interface OptimumResponse {
+  id: number
   data: OptimumData
 }
 
@@ -109,10 +132,18 @@ export class EventData {
   title: string
   location: string
   start: Date
-  optimumDboId: number
+  optimumId: number
 }
 
 interface EventResponse {
   data: EventData
-  links: { [key: string]: string; };
+  hrefs: { [key: string]: string; };
+}
+
+interface EventsInfoResponse {
+  permissions: [string]
+}
+
+interface TocResponse {
+  hrefs: { [key: string]: string; };
 }

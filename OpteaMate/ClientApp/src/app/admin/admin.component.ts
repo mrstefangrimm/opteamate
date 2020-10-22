@@ -14,7 +14,7 @@ export class AdminComponent {
   found: boolean = false
   eventData: Event
 
-  constructor(private route: ActivatedRoute,
+  constructor(
     private readonly http: HttpClient,
     @Inject('BASE_URL') private readonly baseUrl: string) {
   }
@@ -34,10 +34,10 @@ export class Event {
   location: string
   start: string
   duration: string
-  optimaId: string
+  optimumId: string
 }
 
 interface EventResponse {
   data: Event
-  links: { [key: string]: string; };
+  hrefs: { [key: string]: string; };
 }

@@ -45,7 +45,7 @@
                         <a href="@GetLink(ev.data.eventToken)">Registrieren...</a>
                     </td>
                     <td>
-                        <button color="standard" @onclick="(() => DeleteEvent(ev.data.eventDboId))">L&ouml;schen</button>
+                        <button color="standard" @onclick="(() => DeleteEvent(ev.data.eventId))">L&ouml;schen</button>
                     </td>
                 </tr>
             }
@@ -63,7 +63,7 @@
         <select @bind="selectedOptimumId">
             @foreach (var item in optima)
             {
-                <option value="@item.data.OptimumDboId">@item.data.name</option>
+                <option value="@item.data.optimumId">@item.data.name</option>
             }
         </select>
 
@@ -124,12 +124,12 @@
       var request = ServiceEndpoint + "api/optima";
       var response = await Http.GetFromJsonAsync<OptimaResponse>(request);
       optima = response.data;
-      selectedOptimumId = optima[1].data.OptimumDboId;
+      selectedOptimumId = optima[1].data.optimumId;
   }
 
   OptimumData GetOptimumData(long id)
   {
-      var or = optima.FirstOrDefault(o => o.data.OptimumDboId == id);
+      var or = optima.FirstOrDefault(o => o.data.optimumId == id);
       return or?.data;
   }
 
@@ -149,7 +149,7 @@
   {
       newEvent.start = selectedDate;
       newEvent.start = new DateTime(selectedDate.Year, selectedDate.Month, selectedDate.Day, selectedHour, selectedMinutes, 0).ToUniversalTime();
-      newEvent.optimumDboId = selectedOptimumId;
+      newEvent.optimumId = selectedOptimumId;
       newEvent.seriesToken = new Guid(SeriesToken);
 
       var request = ServiceEndpoint + "api/events";
@@ -168,7 +168,7 @@
 
   private class OptimumData
   {
-      public long OptimumDboId { get; set; }
+      public long optimumId { get; set; }
       public string name { get; set; }
       public string strategies { get; set; }
       public string positions { get; set; }
@@ -186,17 +186,17 @@
 
   private class EventData
   {
-      public long eventDboId { get; set; }
+      public long eventId { get; set; }
       public Guid eventToken { get; set; }
       public string title { get; set; }
       public string location { get; set; }
       public DateTime start { get; set; }
-      public long optimumDboId { get; set; }
       public Guid seriesToken { get; set; }
+      public long optimumId { get; set; }
   }
 
   private class EventResponse
-  {
+{
       public EventData data { get; set; }
       public Dictionary<string, string> links { get; set; }
   }

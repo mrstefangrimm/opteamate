@@ -5,6 +5,11 @@ using System.Collections.Generic;
 
 namespace opteamate {
   public class EventDbo : EventData {
+    public long EventDboId { get; set; }
+
+    //public long OptimumDboId { get; set; }
+    //public OptimumDbo OptimumDbo { get; set; }
+
     public List<RegistrationDbo> Registrations { get; set; }
   }
 }

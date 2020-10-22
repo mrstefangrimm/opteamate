@@ -3,10 +3,9 @@
 //
 
 namespace opteamate {
-  public class RegistrationDbo : RegistrationData {
-    public long RegistrationDboId { get; set; }
-
-    public long EventDboId { get; set; }
-    public EventDbo EventDbo { get; set; }
+  public class RegistrationsInfoData {
+    public long NumRegistrations { get; set; }
+    public long NumMissing { get; set; }
+    public bool HasSponsors { get; set; }
   }
 }

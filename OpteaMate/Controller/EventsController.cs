@@ -8,8 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace opteamate
-{
+namespace opteamate {
 
   [Route("api/[controller]")]
   [ApiController]
@@ -20,27 +19,84 @@ namespace opteamate
       _context = context;
     }
 
+    // GET: api/events/info
+    [HttpGet("info")]
+    public IActionResult GetEventsInfo() {
+
+      var response = new EventsInfoResponse();
+
+      // PostEvent
+      response.AddPermission(PermissionsType.POST);
+      return Ok(response);
+    }
+
     // GET: api/events
     [HttpGet]
     public IActionResult GetEvents() {
+      var response = new EventsResponse();
 
-      var evtsDbo = _context.Events.ToList();
+      var headers = HttpContext.Request.Headers["user"];
+      bool isAdmin = headers.Contains("admin");
 
-      var eventsDto = new EventsDto();
-      eventsDto.AddLink(LinkType.self, Url.ActionLink(nameof(GetEvents)));
-      eventsDto.AddAction(ActionType.GET, "this");
+      if (isAdmin) {
+        var evtsDbo = _context.Events.ToList();
+        if (evtsDbo.Count > 0) {
+          // Do not load registration to reduce network traffic _context.Registrations.Load();
 
-      if (evtsDbo.Count > 0) {
-        // Do not load registration to reduce network traffic _context.Registrations.Load();
+          response.Data = new List<EventResponse>();
 
-        eventsDto.Data = new List<EventDto>();
-
-        foreach (var evtDbo in evtsDbo) {
-          var evtDto = CreateEventDto(evtDbo);
-          eventsDto.Data.Add(evtDto);
+          foreach (var evtDbo in evtsDbo) {
+            response.Data.Add(CreateEventResponse(evtDbo));
+          }
         }
       }
-      return Ok(eventsDto);
+
+      // PostEvent
+      response.AddPermission(PermissionsType.POST);
+
+      return Ok(response);
+    }
+
+    // GET: api/events/5/registrations/info
+    [HttpGet("{id}/registrations/info")]
+    public async Task<IActionResult> GetEventRegistrationsInfo(long id) {
+
+      var evtDbo = _context.Events.Find(id);
+      if (evtDbo == null) { return NotFound(); }
+
+      var response = new RegistrationsInfoResponse() {
+        Data = new RegistrationsInfoData()
+      };
+
+      //var numRegCountTask = _context.Registrations.CountAsync(reg => reg.EventDboId == id);
+      //var sponsorsTask = _context.Registrations.AnyAsync(reg => reg.EventDboId == id && !string.IsNullOrEmpty(reg.SponsorOf));
+
+      int numReg = 0;
+      int numSponsors = 0;
+      var forEachTask = _context.Registrations.ForEachAsync(reg => {
+        if (reg.EventDboId == id) {
+          numReg++;
+          if (!string.IsNullOrEmpty(reg.SponsorOf)) {
+            numSponsors++;
+          }
+        }
+      });
+
+      bool mutable = evtDbo.Deadline.HasValue ? evtDbo.Deadline > DateTime.Now.ToUniversalTime() : evtDbo.Start > DateTime.Now.ToUniversalTime();
+      if (mutable) {
+        // PostEventRegistration
+        response.AddPermission(PermissionsType.POST);
+      }
+
+      //response.Data.NumRegistrations = await numRegCountTask;
+      //response.Data.HasSponsors = await sponsorsTask;
+
+      await forEachTask;
+      response.Data.NumRegistrations = numReg;
+      response.Data.HasSponsors = numSponsors != 0;
+
+
+      return Ok(response);
     }
 
     // GET: api/events/5
@@ -53,7 +109,7 @@ namespace opteamate
       if (evtDbo == null) { return NotFound(); }
 
       await _context.Registrations.LoadAsync();
-      var evtDto = CreateEventDto(evtDbo);
+      var evtDto = CreateEventResponse(evtDbo);
       return Ok(evtDto);
     }
 
@@ -65,75 +121,81 @@ namespace opteamate
       if (key == "event") { comp = a => a.EventToken == token; }
       else if (key == "series") { comp = a => a.SeriesToken == token; }
       if (comp != null) {
-        var eventsDto = new EventsDto();
-        eventsDto.Data = new List<EventDto>();
-
-        var linkEvt = Url.ActionLink(@"api/bytoken", null, new { key = key, token = token });
-
-        eventsDto.AddLink(LinkType.self, linkEvt);
+        var response = new EventsResponse { Data = new List<EventResponse>() };
 
         var matches = _context.Events.Where(comp);
         foreach (EventDbo evtDbo in matches) {
-          var evtDto = CreateEventDto(evtDbo);
-          eventsDto.Data.Add(evtDto);
+          var evtDto = CreateEventResponse(evtDbo);
+          response.Data.Add(evtDto);
         }
-        return Ok(eventsDto);
+
+        // PostEvent
+        response.AddPermission(PermissionsType.POST);
+
+        return Ok(response);
       }      
-      return NoContent();
+      return NotFound();
     }
 
     //GET "http://localhost:5000/api/events/byevent?token=0000-abcd"
     [HttpGet("byEvent")]
     public IActionResult GetEventsByEventToken(Guid token) {
-      var eventsDto = new EventsDto();
-      eventsDto.Data = new List<EventDto>();
-
-      var linkEvt = Url.ActionLink(nameof(GetEventsByEventToken), null, new { token = token });
-      eventsDto.AddLink(LinkType.self, linkEvt);
+      var response = new EventsResponse();
 
       var matches = _context.Events.Where(a => a.EventToken == token);
       if (matches.Any())
       {
+        response.Data = new List<EventResponse>();
         _context.Registrations.Load();
         foreach (EventDbo evtDbo in matches)
         {
-          var evtDto = CreateEventDto(evtDbo);
-          eventsDto.Data.Add(evtDto);
+          var evtDto = CreateEventResponse(evtDbo);
+          response.Data.Add(evtDto);
         }
+
+        // PostEvent
+        response.AddPermission(PermissionsType.POST);
+
+        return Ok(response);
       }
-      return Ok(eventsDto);
+      return NotFound();
     }
 
     //GET "http://localhost:5000/api/events/byseries?token=0000-abcd"
     [HttpGet("bySeries")]
     public IActionResult GetEventsBySeriesToken(Guid token) {
-      var eventsDto = new EventsDto();
-      eventsDto.Data = new List<EventDto>();
-
-      var linkEvt = Url.ActionLink(nameof(GetEventsBySeriesToken), null, new { token = token });
-      eventsDto.AddLink(LinkType.self, linkEvt);
+      var response = new EventsResponse();
 
       var matches = _context.Events.Where(a => a.SeriesToken == token);
-      foreach (EventDbo evtDbo in matches) {
-        var evtDto = CreateEventDto(evtDbo);
-        eventsDto.Data.Add(evtDto);
+      if (matches.Any()) {
+        response.Data = new List<EventResponse>();
+
+        foreach (EventDbo evtDbo in matches) {
+          var evtDto = CreateEventResponse(evtDbo);
+          response.Data.Add(evtDto);
+        }
+
+        // PostEvent
+        response.AddPermission(PermissionsType.POST);
+
+        return Ok(response);
       }
-      return Ok(eventsDto);
+      return NotFound();
     }
 
     [HttpPost]
     public async Task<IActionResult> PostEvent(EventData evt) {
 
       var evtDbo = new EventDbo();
-      evt.EventToken = Guid.NewGuid();
       evtDbo.CopyFrom(evt);
+      evtDbo.EventToken = Guid.NewGuid();
       _context.Events.Add(evtDbo);
 
       var saving = _context.SaveChangesAsync();
-      EventDto evtDto = CreateEventDto(evtDbo);
+      EventResponse evtDto = CreateEventResponse(evtDbo);
       await saving; 
 
-      return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
+      return CreatedAtAction(nameof(GetEvent), new { evtDbo.EventDboId }, evtDto);
     }
 
     // POST: api/events/1/registrations
@@ -154,10 +216,10 @@ namespace opteamate
 
       _context.Update(evtDbo);
       var saving = _context.SaveChangesAsync();
-      var evtDto = CreateEventDto(evtDbo);
+      var evtDto = CreateEventResponse(evtDbo);
       await saving;
 
-      return CreatedAtAction(nameof(GetEvent), new { id = evtDbo.EventDboId }, evtDto);
+      return CreatedAtAction(nameof(GetEvent), new { evtDbo.EventDboId }, evtDto);
     }
 
     // PUT: api/events/5
@@ -249,43 +311,44 @@ namespace opteamate
       return NoContent();
     }
 
-    private EventDto CreateEventDto(EventDbo evtDbo) {
-      var evtDto = new EventDto();
-      evtDto.Data = new EventData();
-      evtDto.Data.CopyFrom(evtDbo);
-      if (evtDbo.Registrations != null) {
+    private EventResponse CreateEventResponse(EventDbo dbo) {
+      var response = new EventResponse() {
+        Id = dbo.EventDboId,
+        Data = new EventData(),
+        Registrations = new RegistrationsResponse() { Data = new List<RegistrationResponse>() }
+      };
 
-        evtDto.Registrations = new RegistrationsDto();
-        evtDto.Registrations.Data = new List<RegistrationData>();
-
-        foreach (var regDbo in evtDbo.Registrations) {
-          // TODO: add the forwards, backs etc.
-          var val = new RegistrationData();
-          val.CopyFrom(regDbo);
-          evtDto.Registrations.Data.Add(val);
+      response.Data.CopyFrom(dbo);
+      
+      bool mutable = dbo.Deadline.HasValue ? dbo.Deadline > DateTime.Now.ToUniversalTime() : dbo.Start > DateTime.Now.ToUniversalTime();
+      if (dbo.Registrations != null) {
+        foreach (var regDbo in dbo.Registrations) {
+          response.Registrations.Data.Add(CreateRegistrationResponse(regDbo, mutable));
         }
       }
-      var linkEvt = Url.ActionLink(nameof(GetEvent), null, new { id = evtDbo.EventDboId });
 
-      var home = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-      var linkReg = home + "/enroll/" + evtDbo.EventToken;
-      evtDto.AddLink(LinkType.self, linkEvt);
-      evtDto.AddLink(LinkType.other, linkReg);
-      evtDto.AddLink(LinkType.routerLink, "enroll/" + evtDbo.EventToken);
-      if (evtDbo.SeriesToken != Guid.Empty)
-      {     
-        evtDto.AddLink(LinkType.back, "series/" + evtDbo.SeriesToken);
+      response.AddHref(HrefType.SELF, "enroll/" + dbo.EventToken);
+      if (dbo.SeriesToken.HasValue && dbo.SeriesToken != Guid.Empty) {
+        response.AddHref(HrefType.BACK, "series/" + dbo.SeriesToken);
       }
-      evtDto.AddAction(ActionType.DELETE, linkEvt);
-      return evtDto;
+      // DeleteEvent; also possible to delete past events
+      response.AddPermission(PermissionsType.DELETE);
+
+      if (mutable) {
+        // PostEventRegistration
+        response.Registrations.AddPermission(PermissionsType.POST);
+      }
+
+      return response;
     }
 
-    private EventDto CreateRegistrationDto(RegistrationDbo regDbo) {
-      var regDto = new EventDto();
-      regDto.Data = new EventData();
-      regDto.Data.CopyFrom(regDbo);
-      regDto.AddLink(LinkType.self, Url.ActionLink(nameof(GetEvent), null, new { id = regDbo.EventDboId }));
-      return regDto;
+    private RegistrationResponse CreateRegistrationResponse(RegistrationDbo dbo, bool mutable) {
+      var response = new RegistrationResponse { Id = dbo.RegistrationDboId, Data = new RegistrationData() };
+      response.Data.CopyFrom(dbo);
+      if (mutable) {
+        response.AddPermission(PermissionsType.DELETE);
+      }
+      return response;
     }
 
   }

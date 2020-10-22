@@ -20,7 +20,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker'
 import { MatSelectModule } from '@angular/material/select'
 import { MatButtonModule } from '@angular/material/button'
 import { RegistrationRosterPipe } from './enroll/registration-position-pipe'
-import { RegistrationScratchPipe } from './enroll/registration-position-pipe'
+import { RegistrationScratchPipe } from './enroll/registration-position-pipe';
+import { NotfoundComponent } from './notfound/notfound.component'
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { RegistrationScratchPipe } from './enroll/registration-position-pipe'
     AdminComponent,
     RegistrationComponent,
     RegistrationRosterPipe,
-    RegistrationScratchPipe
+    RegistrationScratchPipe,
+    NotfoundComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -40,7 +42,9 @@ import { RegistrationScratchPipe } from './enroll/registration-position-pipe'
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'series/:seriestoken', component: SeriesComponent },
       { path: 'admin', component: AdminComponent },
-      { path: 'enroll/:eventtoken', component: RegistrationComponent }
+      { path: 'enroll/:eventtoken', component: RegistrationComponent },
+      { path: '404', component: NotfoundComponent },
+      { path: '**', redirectTo: '/404' }
     ]),
     BrowserAnimationsModule,
     MatSliderModule,

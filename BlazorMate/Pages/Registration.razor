@@ -91,7 +91,7 @@
                         <td>@reg.name</td>
                         <td>@reg.position</td>
                         <td>
-                            <button color="standard" @onclick="(() => DeleteRegistration(reg.registrationDboId))">L&ouml;schen</button>
+                            <button color="standard" @onclick="(() => DeleteRegistration(reg.registrationId))">L&ouml;schen</button>
                         </td>
                     </tr>
                 }
@@ -102,7 +102,7 @@
                         <td>@reg.name</td>
                         <td>@reg.position</td>
                         <td>
-                            <button color="standard" @onclick="(() => DeleteRegistration(reg.registrationDboId))">L&ouml;schen</button>
+                            <button color="standard" @onclick="(() => DeleteRegistration(reg.registrationId))">L&ouml;schen</button>
                         </td>
                     </tr>
                 }
@@ -169,7 +169,7 @@
       {
           if (evt.data.eventToken == new Guid(EventToken))
           {
-              eventId = evt.data.eventDboId;
+              eventId = evt.data.eventId;
               break;
           }
       }
@@ -194,7 +194,7 @@
           registrations = null;
           stats.TotNumRegistrations = 0;
       }
-      await GetPositions(currentEvent.data.optimumDboId);
+      await GetPositions(currentEvent.data.optimumId);
   }
 
   async Task GetPositions(long optId)
@@ -310,7 +310,7 @@
 
   private class OptimumData
   {
-      public long optimaDboId { get; set; }
+      public long optimumId { get; set; }
       public string name { get; set; }
       public string strategies { get; set; }
       public string positions { get; set; }
@@ -323,7 +323,7 @@
 
   private class RegistrationData
   {
-      public long registrationDboId { get; set; }
+      public long registrationId { get; set; }
       public string name { get; set; }
       public string position { get; set; }
       public string sponsorOf { get; set; }
@@ -339,16 +339,16 @@
 
   private class EventData
   {
-      public long eventDboId { get; set; }
+      public long eventId { get; set; }
       public Guid eventToken { get; set; }
       public string title { get; set; }
       public string location { get; set; }
       public DateTime start { get; set; }
-      public long optimumDboId { get; set; }
+      public long optimumId { get; set; }
   }
 
   private class EventResponse
-  {
+{
       public EventData data { get; set; }
       public Dictionary<string, string> links { get; set; }
       public RegistrationsResponse registrations { get; set; }

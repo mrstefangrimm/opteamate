@@ -1,16 +1,16 @@
 // https://embed.plnkr.co/l1oTNT/
 
 import { PipeTransform, Pipe } from '@angular/core'
-import { RegistrationData } from './registration.component'
+import { RegistrationResponse } from './registration.component'
 
 @Pipe({
   name: 'rosterfilter',
   pure: false
 })
 export class RegistrationRosterPipe implements PipeTransform {
-  transform(items: RegistrationData[], filter: string): any {
-    var allOfPosiion = items.filter(item => item.position == filter && item.transientScratch != true)
-    allOfPosiion.sort((a, b) => +new Date(a.creationTime) - +new Date(b.creationTime))
+  transform(items: RegistrationResponse[], filter: string): any {
+    var allOfPosiion = items.filter(item => item.data.position == filter && item.data.transientScratch != true)
+    allOfPosiion.sort((a, b) => +new Date(a.data.creationTime) - +new Date(b.data.creationTime))
     return allOfPosiion
   }
 }
@@ -20,9 +20,9 @@ export class RegistrationRosterPipe implements PipeTransform {
   pure: false
 })
 export class RegistrationScratchPipe implements PipeTransform {
-  transform(items: RegistrationData[], filter: string): any {
-    var allOfPosiion = items.filter(item => item.position == filter && item.transientScratch == true)
-    allOfPosiion.sort((a, b) => +new Date(a.creationTime) - +new Date(b.creationTime))
+  transform(items: RegistrationResponse[], filter: string): any {
+    var allOfPosiion = items.filter(item => item.data.position == filter && item.data.transientScratch == true)
+    allOfPosiion.sort((a, b) => +new Date(a.data.creationTime) - +new Date(b.data.creationTime))
     return allOfPosiion
   }
 }

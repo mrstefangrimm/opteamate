@@ -4,8 +4,7 @@
 using System.Collections.Generic;
 
 namespace opteamate {
-  interface IHypermediaDto {
-    Dictionary<string, string> Links { get; }
-    Dictionary<string, string> Actions { get; }
+  public class RegistrationsResponse : WebApiResponseBase<ICollection<RegistrationResponse>> {
+    public override string Type => WebApiResponseType.Collection.ToString();
   }
 }

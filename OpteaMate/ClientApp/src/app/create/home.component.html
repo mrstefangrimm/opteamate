@@ -2,14 +2,15 @@
      Licensed under the GPL. See LICENSE file in the project root for full license information.
 -->
 <h1>T&auml;tschmeister</h1>
-<h2>Neuer Anlass</h2>
-
 <p>
   Einzeln
   <a [routerLink]="['/series/' + nextSeriesToken]">Serie</a>
 </p>
 
-<div>
+<hr />
+<h2>Neu abmache:</h2>
+
+<div *ngIf="selectedOptimum">
   <mat-form-field>
     <mat-label>Schema</mat-label>
     <mat-select [(value)]="selectedOptimum">
@@ -74,5 +75,5 @@
 </div>
 
 <p *ngIf="!matcher.inError">
-  <button mat-raised-button color="primary" (click)="addEvent()">Erstellen</button>
+  <button *ngIf="postPermission" mat-raised-button color="primary" (click)="addEvent()">Erstellen</button>
 </p>

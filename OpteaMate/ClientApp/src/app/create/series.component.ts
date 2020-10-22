@@ -48,10 +48,15 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 
 export class SeriesComponent {
 
+  eventsUri: string
+  optimaUri: string
+
   events: EventResponse[]
   matcher = new MyErrorStateMatcher();
   newEvent: EventData = new EventData()
-  seriesToken: string = "N/A"
+
+  postPermission: boolean
+  seriesToken: string
   selectedOptimum: OptimumResponse
   optima: OptimumResponse[]
   selectedHour: number = 19;
@@ -63,18 +68,34 @@ export class SeriesComponent {
     private readonly http: HttpClient,
     @Inject('BASE_URL') private readonly baseUrl: string) {
 
-    this.route.params.subscribe(params => {
-      this.seriesToken = params.seriestoken
-      this.seriesUrl = this.baseUrl + "series/" + this.seriesToken
-      this.getEventsBySeriesToken()
-    })
-
-    let request = this.baseUrl + 'api/optima/'
-    this.http.get<OptimaResponse>(request)
+    let tocRequest = this.baseUrl + 'api/toc'
+    this.http.get<TocResponse>(tocRequest)
       .subscribe(result => {
         console.log(result)
-        this.optima = result.data
-        this.selectedOptimum = this.optima[1]
+        this.eventsUri = result.hrefs['events']
+        this.optimaUri = result.hrefs['optima']
+        console.log(this.eventsUri)
+        console.log(this.optimaUri)
+
+        this.route.params.subscribe(params => {
+          this.seriesToken = params.seriestoken
+          this.seriesUrl = this.baseUrl + "series/" + this.seriesToken
+          this.getEventsBySeriesToken()
+        })
+
+        this.http.get<OptimaResponse>(this.optimaUri)
+          .subscribe(result => {
+            console.log(result)
+            this.optima = result.data
+            this.selectedOptimum = this.optima[0]
+          }, error => console.error(error))
+
+        this.http.get<EventsInfoResponse>(this.eventsUri + 'info')
+          .subscribe(result => {
+            console.log(result)
+            this.postPermission = result.permissions.includes('post')
+          }, error => console.error(error))
+
       }, error => console.error(error))
   }
 
@@ -93,17 +114,16 @@ export class SeriesComponent {
     this.newEvent.start = this.selectedDate
     this.newEvent.start.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
     console.info(this.newEvent.start)
-    this.newEvent.optimumDboId = this.selectedOptimum.data.optimumDboId
+    this.newEvent.optimumId = this.selectedOptimum.id
     this.newEvent.seriesToken = this.seriesToken
 
-    let request = this.baseUrl + 'api/events'
-    this.http.post<EventData>(request, this.newEvent).subscribe(result => {
+    this.http.post<EventData>(this.eventsUri, this.newEvent).subscribe(result => {
       this.getEventsBySeriesToken()
     }, error => console.error(error))
   }
 
   deleteEvent(evtId: string) {
-    let request = this.baseUrl + 'api/events/' + evtId
+    let request = this.eventsUri + evtId
     this.http.delete(request)
       .subscribe(result => {
         this.getEventsBySeriesToken()
@@ -111,11 +131,24 @@ export class SeriesComponent {
   }
 
   getEventsBySeriesToken() {
-    let request = this.baseUrl + 'api/events/byseries?token=' + this.seriesToken
+    let request = this.eventsUri + 'byseries?token=' + this.seriesToken
     this.http.get<EventsResponse>(request)
       .subscribe(result => {
         console.log(result)
-        this.events = result.data
+        if (result != null) {
+          this.events = result.data
+
+          this.events.forEach(
+            e => {
+              let infoRequest = this.eventsUri + e.id + '/registrations/info'
+              this.http.get<RegistrationsInfoResponse>(infoRequest)
+                .subscribe(result => {
+                  console.log(result)
+                  e.data.registrationsCount = result.data.numRegistrations
+                  e.data.hasSponsors = result.data.hasSponsors
+                }, error => console.error(error))
+            })
+        }
       }, error => console.error(error))
   }
 
@@ -136,13 +169,13 @@ export class SeriesComponent {
 }
 
 interface OptimumData {
-  optimumDboId: number
   name: string
   strategies: string
   positions: string
 }
 
 interface OptimumResponse {
+  id: number
   data: OptimumData
 }
 
@@ -150,22 +183,49 @@ interface OptimaResponse {
   data: OptimumResponse[]
 }
 
+interface RegistrationsResponse {
+  permissions: [string]
+}
+
 export class EventData {
-  eventDboId: string
   eventToken: string
   title: string
   location: string
   start: Date
-  optimumDboId: number
+  optimumId: number
   seriesToken: string
+
+  registrationsCount: number
+  hasSponsors: boolean
 }
 
 interface EventResponse {
+  id: number
   data: EventData
-  links: { [key: string]: string; };
+  hrefs: { [key: string]: string; };
+  registrations: RegistrationsResponse
+  permissions: [string]
 }
 
 interface EventsResponse {
   data: EventResponse[]
-  links: { [key: string]: string }
+  hrefs: { [key: string]: string }
+  permissions: [string]
+}
+
+interface EventsInfoResponse {
+  permissions: [string]
+}
+
+interface RegistrationsInfoData {
+  numRegistrations: number
+  hasSponsors: boolean
+}
+
+interface RegistrationsInfoResponse {
+  data: RegistrationsInfoData
+}
+
+interface TocResponse {
+  hrefs: { [key: string]: string; };
 }

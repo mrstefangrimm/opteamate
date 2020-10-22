@@ -1,8 +1,13 @@
 ﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
+using System.Collections.Generic;
+
 namespace opteamate {
-  public class EventDto : HypermediaDtoBase<EventData> {
-    public RegistrationsDto Registrations { get; set; }
+
+  interface IWebApiResponse {
+    string Type { get; }
+    IDictionary<string, string> Hrefs { get; }
+    IList<string> Permissions { get; }
   }
 }

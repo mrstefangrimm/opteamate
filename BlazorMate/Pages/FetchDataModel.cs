@@ -4,8 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace BlazorMate.Pages
-{
+namespace BlazorMate.Pages {
   public partial class FetchDataModel : ComponentBase
   {
     private const string ServiceEndpoint = "http://localhost:4700/";
@@ -29,7 +28,7 @@ namespace BlazorMate.Pages
 
     public class OptimumData
     {
-      public long OptimumDboId { get; set; }
+      public long optimumId { get; set; }
       public string Name { get; set; }
       public string Strategies { get; set; }
       public string Positions { get; set; }

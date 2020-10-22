@@ -3,7 +3,8 @@
 //
 namespace opteamate {
 
-public class OptimumDto : HypermediaDtoBase<OptimumData> {
-    public RegistrationsDto Registrations { get; set; }
+  public class OptimumResponse : WebApiResponseBase<OptimumData> {
+    public override string Type => WebApiResponseType.Resource.ToString();
+    public long Id { get; set; }
   }
 }

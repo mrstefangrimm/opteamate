@@ -2,17 +2,20 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace opteamate
-{
+namespace opteamate {
   public class EventData {
-    public long EventDboId { get; set; }
-    public Guid EventToken { get; set; }
+    [Required]
+    public Guid EventToken { get; set; }    
+    [Required]
+    public long OptimumId { get; set; }
 
+    [Required]
+    public DateTime Start { get; set; }
     public string Title { get; set; }
     public string Location { get; set; }
-    public DateTime Start { get; set; }
-    public long OptimumDboId { get; set; }
-    public Guid SeriesToken { get; set; }
+    public Guid? SeriesToken { get; set; }
+    public DateTime? Deadline { get; set; }
   }
 }
