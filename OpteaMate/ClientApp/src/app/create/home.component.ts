@@ -1,50 +1,15 @@
 // Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
-import { Component, Inject, OnInit  } from '@angular/core'
+import { Component, Inject  } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 import { Router } from '@angular/router'
-import { FormControl, FormGroupDirective, NgForm } from '@angular/forms'
-import { NativeDateAdapter, DateAdapter, ErrorStateMatcher } from '@angular/material/core'
+import { DateAdapter } from '@angular/material/core'
 import { Guid } from '../common/guid.component';
-
-export const PICK_FORMATS = {
-  parse: { dateInput: { month: 'short', year: 'numeric', day: 'numeric' } },
-  display: {
-    dateInput: 'input',
-    monthYearLabel: { year: 'numeric', month: 'short' },
-    dateA11yLabel: { year: 'numeric', month: 'long', day: 'numeric' },
-    monthYearA11yLabel: { year: 'numeric', month: 'long' }
-  }
-}
-
-class PickDateAdapter extends NativeDateAdapter {
-  format(date: Date): string {
-    return date.toLocaleDateString()
-  }
-}
-
-export class DatepickerComponent implements OnInit {
-  constructor() { }
-  date: any;
-  ngOnInit() {
-  }
-}
-
-export class MyErrorStateMatcher implements ErrorStateMatcher {
-  inError: boolean = true
-  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
-    this.inError = !!(control && control.invalid && (control.dirty || control.touched))
-    return this.inError
-  }
-}
 
 @Component({
   selector: 'app-home',
-  templateUrl: './home.component.html',
-  providers: [
-    { provide: DateAdapter, useClass: PickDateAdapter }
-  ]
+  templateUrl: './home.component.html'
 })
 
 export class HomeComponent {
@@ -52,21 +17,23 @@ export class HomeComponent {
   eventsUri: string
   optimaUri: string
 
-  matcher = new MyErrorStateMatcher();
   newEvent: EventData = new EventData()
   optima: OptimumResponse[]
 
   postPermission: boolean
   selectedOptimum: OptimumResponse
-  selectedDate = new Date();
-  selectedHour: number = 19;
-  selectedMinutes: number = 0;
+  selectedDate: Date
+  selectedHour: number
+  selectedMinutes: number
   nextSeriesToken: string
 
   constructor(
     private readonly http: HttpClient,
     private readonly router: Router,
+    private dateAdapter: DateAdapter<Date>,
     @Inject('BASE_URL') private readonly baseUrl: string) {
+
+    this.dateAdapter.setLocale('de');
 
     let tocRequest = this.baseUrl + 'api/toc'
     this.http.get<TocResponse>(tocRequest)
@@ -91,10 +58,9 @@ export class HomeComponent {
             this.postPermission = result.permissions.includes('post')
           }, error => console.error(error))
 
-      }, error => console.error(error))
+        this.setInitialDateTime()
 
-
-    
+      }, error => console.error(error))    
   }
 
   addEvent() {
@@ -105,11 +71,32 @@ export class HomeComponent {
     this.http.post<EventResponse>(this.eventsUri, this.newEvent).
       subscribe(result => {
         console.info(result.data.eventToken)
+        // set initial dt is not really required since we navigate away anyway
+        this.setInitialDateTime()
         let selfRoute = result.hrefs['self']
         console.info(selfRoute)
         this.router.navigate([selfRoute])
       }, error => console.error(error))
   }
+
+  isFutureDate() {
+    if (this.selectedDate == null) return false
+    
+    var selected = this.selectedDate
+    selected.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
+
+    let inFuture = +selected - +new Date() > 1 * 60 * 60 * 1000
+    return inFuture
+  }
+
+  setInitialDateTime() {
+    let currentDate = new Date();
+    this.selectedHour = currentDate.getMinutes() > 30 ? currentDate.getHours() + 1 : currentDate.getHours();
+    this.selectedMinutes = 0;
+    this.selectedDate = currentDate
+    this.selectedDate.setHours(currentDate.getHours() + 24, 0, 0, 0)
+  }
+
 }
 
 interface OptimumData {

@@ -2,85 +2,114 @@
      Licensed under the GPL. See LICENSE file in the project root for full license information.
 -->
 
-<h1>T&auml;tschmeister</h1>
+<table>
+  <thead>
+    <tr>
+      <td width="100%">
+        <h1>Opteamate</h1>
+      </td>
+      <td align="right" valign="top">
+        <button mat-raised-button color="standard" (click)="copyLinkToClipboard()">URL in die Zwischenablage</button>
+      </td>
+    </tr>
+    <tr>
+      <td *ngIf="!backRoute" width="100%"><a [routerLink]="['/']">zur Startseite</a></td>
+      <td *ngIf="backRoute" width="100%"></td>
+      <td *ngIf="backRoute" align="right"><a [routerLink]="['/'] + backRoute">Zur&uuml;ck zur Serie</a></td>
+    </tr>
+  </thead>
+</table>
 
-<p *ngIf="backRoute">
-  <a [routerLink]="['/'] + backRoute">Zur&uuml;ck zur Serie</a>
-</p>
+<hr />
 
 <h2 *ngIf="currentEvent">{{currentEvent.data.title}}, {{currentEvent.data.location}}, {{eventStartTime | date :'dd.MM.yyyy H:mm'}}</h2>
-
-<div *ngIf="!backRoute">
-  Anzahl Registrierungen insgesamt: {{stats.TotNumRegistrations}}
-  <br />
-  URL: {{eventUrl}}
-  <button mat-raised-button color="standard" (click)="copyLinkToClipboard()">In die Zwischenablage</button>
-</div>
-
+<h2>&Uuml;bersicht</h2>
 
 <table>
   <thead>
     <tr>
-      <th>Position</th>
-      <th>Registriert</th>
-      <th>&Uuml;berz&auml;hlig</th>
-      <th>n&auml;chstes Optimum</th>
-      <th>Fehlend</th>
+      <th width="40" align="left">Position</th>
+      <th width="15" align="center">Registriert</th>
+      <th width="15" align="center">&Uuml;berz&auml;hlig</th>
+      <th width="15" align="center">n&auml;chstes Optimum</th>
+      <th width="15" align="center">Fehlend</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let i of stats.theOptima | keyvalue">
-      <td>{{i.key}}</td>
-      <td>{{i.value.registrations}}</td>
-      <td>{{i.value.remaining}}</td>
-      <td>{{i.value.nextOptimum}}</td>
-      <td>{{i.value.missing}}</td>
+      <td align="left">{{i.key}}</td>
+      <td align="center">{{i.value.registrations}}</td>
+      <td align="center">{{i.value.remaining}}</td>
+      <td align="center">{{i.value.nextOptimum}}</td>
+      <td align="center">{{i.value.missing}}</td>
     </tr>
   </tbody>
 </table>
 
-<hr/>
+<hr />
 
-<form>
-  <div>
+<h2>Teilnehmer</h2>
 
-    <mat-form-field class="example-full-width">
-      <mat-label>Name</mat-label>
-      <input matInput name="name" id="name" [(ngModel)]="newRegistration.name" type="text" class="form-control" />
-    </mat-form-field>
+<form *ngIf="registrations && registrations.permissions.includes('post')">
 
-    <mat-form-field>
-      <mat-label>Position</mat-label>
-      <mat-select [(value)]="selectedPosition">
-        <mat-option *ngFor="let p of positions" [value]="p">{{p}}</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <mat-form-field class="example-full-width">
+    <mat-label>Name</mat-label>
+    <input required
+           matInput
+           name="name"
+           [(ngModel)]="newRegistration.name"
+           type="text"
+           class="form-control" />
+    <mat-error>Name, mindestens 3 Zeichen</mat-error>
+  </mat-form-field>
 
-    <button *ngIf="registrations && registrations.permissions.includes('post')" mat-raised-button color="primary" (click)="addRegistration()">Bin d&auml;bi</button>
+  <mat-form-field>
+    <mat-label>Position</mat-label>
+    <mat-select required [(value)]="newRegistration.position">
+      <mat-option *ngFor="let p of positions" [value]="p">{{p}}</mat-option>
+    </mat-select>
+  </mat-form-field>
 
-  </div>
+  <mat-form-field class="example-full-width">
+    <mat-label>(offeriere)</mat-label>
+    <input matInput name="sponsorOf" [(ngModel)]="newRegistration.sponsorOf" type="text" class="form-control" />
+  </mat-form-field>
+
+  <button type="reset"
+          [disabled]="newRegistration.name == null || newRegistration.name.length < 3 || newRegistration.position == null"
+          mat-raised-button
+          color="primary"
+          (click)="addRegistration()">
+    Bin dabei
+  </button>
+
 </form>
 
 <table *ngIf="stats.TotNumRegistrations > 0">
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Position</th>
-      <th>...</th>
+      <th align="left" style="min-width: 100px">Name</th>
+      <th align="left" style="min-width: 100px">Position</th>
+      <th align="left" style="min-width: 100px">Offeriert</th>
+      <th></th>
     </tr>
   </thead>
   <tbody *ngFor="let p of positions">
-    <tr *ngFor="let reg of registrations.data | rosterfilter:p" style="background-color: #abffab;">
-      <td>{{reg.data.name}}</td>
-      <td>{{reg.data.position}}</td>
-      <td>
-        <button *ngIf="reg.permissions.includes('delete')" mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
+    <tr *ngFor="let reg of registrations.data | rosterfilter:p">
+      <td style="background-color: #abffab;">{{reg.data.name}}</td>
+      <td style="background-color: #abffab;">{{reg.data.position}}</td>
+      <td *ngIf="reg.data.sponsorOf" style="background-color:  #abffab;">{{reg.data.sponsorOf}}</td>
+      <td *ngIf="!reg.data.sponsorOf">{{reg.data.sponsorOf}}</td>
+      <td *ngIf="reg.permissions.includes('delete')">
+        <button mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
       </td>
     </tr>
-    <tr *ngFor="let reg of registrations.data | scratchfilter:p" style="background-color: #ffafaf;">
-      <td>{{reg.data.name}}</td>
-      <td>{{reg.data.position}}</td>
-      <td>
+    <tr *ngFor="let reg of registrations.data | scratchfilter:p">
+      <td style="background-color: #ffafaf;">{{reg.data.name}}</td>
+      <td style="background-color: #ffafaf;">{{reg.data.position}}</td>
+      <td *ngIf="reg.data.sponsorOf" style="background-color: #ffafaf;">{{reg.data.sponsorOf}}</td>
+      <td *ngIf="!reg.data.sponsorOf">{{reg.data.sponsorOf}}</td>
+      <td *ngIf="reg.permissions.includes('delete')">
         <button *ngIf="reg.permissions.includes('delete')" mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
       </td>
     </tr>

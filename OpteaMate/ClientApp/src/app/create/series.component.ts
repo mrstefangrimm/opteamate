@@ -1,49 +1,14 @@
 // Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
-import { Component, Inject, OnInit  } from '@angular/core'
+import { Component, Inject  } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { HttpClient } from '@angular/common/http'
-import { FormControl, FormGroupDirective, NgForm } from '@angular/forms'
-import { NativeDateAdapter, DateAdapter, ErrorStateMatcher } from '@angular/material/core'
-
-export const PICK_FORMATS = {
-  parse: { dateInput: { month: 'short', year: 'numeric', day: 'numeric' } },
-  display: {
-    dateInput: 'input',
-    monthYearLabel: { year: 'numeric', month: 'short' },
-    dateA11yLabel: { year: 'numeric', month: 'long', day: 'numeric' },
-    monthYearA11yLabel: { year: 'numeric', month: 'long' }
-  }
-}
-
-class PickDateAdapter extends NativeDateAdapter {
-  format(date: Date): string {
-    return date.toLocaleDateString()
-  }
-}
-
-export class DatepickerComponent implements OnInit {
-  constructor() { }
-  date: any;
-  ngOnInit() {
-  }
-}
-
-export class MyErrorStateMatcher implements ErrorStateMatcher {
-  inError: boolean = true
-  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
-    this.inError = !!(control && control.invalid && (control.dirty || control.touched))
-    return this.inError
-  }
-}
+import { DateAdapter } from '@angular/material/core'
 
 @Component({
   selector: 'app-home',
   templateUrl: './series.component.html',
-  providers: [
-    { provide: DateAdapter, useClass: PickDateAdapter }
-  ]
 })
 
 export class SeriesComponent {
@@ -52,21 +17,23 @@ export class SeriesComponent {
   optimaUri: string
 
   events: EventResponse[]
-  matcher = new MyErrorStateMatcher();
   newEvent: EventData = new EventData()
 
   postPermission: boolean
   seriesToken: string
   selectedOptimum: OptimumResponse
   optima: OptimumResponse[]
-  selectedHour: number = 19;
-  selectedMinutes: number = 0;
-  selectedDate = new Date();
+  selectedHour: number
+  selectedMinutes: number
+  selectedDate: Date
   seriesUrl: string
 
   constructor(private route: ActivatedRoute,
     private readonly http: HttpClient,
+    private dateAdapter: DateAdapter<Date>,
     @Inject('BASE_URL') private readonly baseUrl: string) {
+
+    this.dateAdapter.setLocale('de');
 
     let tocRequest = this.baseUrl + 'api/toc'
     this.http.get<TocResponse>(tocRequest)
@@ -96,6 +63,8 @@ export class SeriesComponent {
             this.postPermission = result.permissions.includes('post')
           }, error => console.error(error))
 
+        this.setInitialDateTime()
+
       }, error => console.error(error))
   }
 
@@ -119,6 +88,7 @@ export class SeriesComponent {
 
     this.http.post<EventData>(this.eventsUri, this.newEvent).subscribe(result => {
       this.getEventsBySeriesToken()
+      this.setInitialDateTime()
     }, error => console.error(error))
   }
 
@@ -164,6 +134,24 @@ export class SeriesComponent {
     selBox.select();
     document.execCommand('copy');
     document.body.removeChild(selBox);
+  }
+
+  isFutureDate() {
+    if (this.selectedDate == null) return false
+
+    var selected = this.selectedDate
+    selected.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
+
+    let inFuture = +selected - +new Date() > 1 * 60 * 60 * 1000
+    return inFuture
+  }
+
+  setInitialDateTime() {
+    let currentDate = new Date();
+    this.selectedHour = currentDate.getMinutes() > 30 ? currentDate.getHours() + 1 : currentDate.getHours();
+    this.selectedMinutes = 0;
+    this.selectedDate = currentDate
+    this.selectedDate.setHours(currentDate.getHours() + 24, 0, 0, 0)
   }
 
 }

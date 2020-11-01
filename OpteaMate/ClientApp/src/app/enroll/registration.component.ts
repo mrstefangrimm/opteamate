@@ -7,7 +7,7 @@ import { HttpClient } from '@angular/common/http'
 
 @Component({
   selector: 'app-registration-component',
-  templateUrl: './registration.component.html'
+  templateUrl: './registration.component.html',
 })
 
 export class RegistrationComponent {
@@ -24,7 +24,6 @@ export class RegistrationComponent {
   eventStartTime: Date
   stats: StatisticData = new StatisticData
   positions: string[]
-  selectedPosition: string
   eventUrl: string
   backRoute: string
 
@@ -49,9 +48,7 @@ export class RegistrationComponent {
           this.getEventByEventToken()
         })
 
-      }, error => console.error(error))   
-
-  
+      }, error => console.error(error))
   }
 
   copyLinkToClipboard() {
@@ -70,10 +67,12 @@ export class RegistrationComponent {
 
   addRegistration() {
     this.newRegistration.creationTime = new Date
-    this.newRegistration.position = this.selectedPosition
     let request = this.eventsUri + this.eventId + "/registrations"
     this.http.post<RegistrationData>(request, this.newRegistration)
       .subscribe(result => {
+        if (this.positions.length == 1) {
+          this.newRegistration.position = this.positions[0]
+        }
         this.getEvent()
       }, error => console.error(error))
   }
@@ -145,6 +144,10 @@ export class RegistrationComponent {
         let posStr = result.data.positions
         this.positions = posStr.split(';')
         this.fillStats(result)
+        if (this.positions.length == 1) {
+          console.log(this.positions[0])
+          this.newRegistration.position = this.positions[0]
+        }
       }, error => console.error(error))
   }
 
@@ -172,12 +175,18 @@ export class RegistrationComponent {
         else {
           statData.nextOptimum = +optimaStrs[p]
           let diff = statData.nextOptimum - statData.registrations
-          statData.missing = Math.max(0, diff)
-          if ((diff < 0 && this.stats.prevOptima[pos] == 0) || (statData.missing == 0 && s == strategies.length - 1)) {
+          let hasNextOptimum = diff > 0
+          if ((diff < 0 && this.stats.prevOptima[pos] == 0) || (!hasNextOptimum && s == strategies.length - 1)) {
             statData.remaining = statData.registrations - statData.nextOptimum
           }
           else {
             statData.remaining = statData.registrations - this.stats.prevOptima[pos]
+          }
+          if (this.stats.prevOptima[pos] == 0) {
+            statData.missing = Math.max(0, diff)
+          }
+          else {
+            statData.missing = 0
           }
         }
         this.stats.theOptima[pos] = statData
@@ -195,18 +204,31 @@ export class RegistrationComponent {
 
       if (!continueCondition) {
 
+        var someMissing = false
         this.positions.forEach(pos => {
           let statData = this.stats.theOptima[pos]
-          if (statData.remaining > 0 && this.registrations != null) {
-            let regForPos =  this.registrations.data.filter(item => item.data.position == pos)
-            regForPos.sort((a, b) => +new Date(b.data.creationTime) - +new Date(a.data.creationTime))
-
-            for (let n = 0; n < statData.remaining; n++) {
-              regForPos[n].data.transientScratch = true
-            }
+          if (statData.missing > 0) {
+            someMissing = true
           }
-
         })
+        console.info(someMissing)
+        if (someMissing && this.registrations != null) {
+          this.registrations.data.forEach(reg => reg.data.transientScratch = true)
+        }
+        else {
+          this.positions.forEach(pos => {
+            let statData = this.stats.theOptima[pos]
+            if (statData.remaining > 0 && this.registrations != null) {
+              let regForPos = this.registrations.data.filter(item => item.data.position == pos)
+              regForPos.sort((a, b) => +new Date(b.data.creationTime) - +new Date(a.data.creationTime))
+
+              for (let n = 0; n < statData.remaining; n++) {
+                regForPos[n].data.transientScratch = true
+              }
+            }
+
+          })
+        }
         return
       }
     }
