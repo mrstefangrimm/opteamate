@@ -55,7 +55,7 @@ export class HomeComponent {
         this.http.get<EventsInfoResponse>(this.eventsUri + 'info')
           .subscribe(result => {
             console.log(result)
-            this.postPermission = result.permissions.includes('post')
+            this.postPermission = result.hrefs.hasOwnProperty('post')
           }, error => console.error(error))
 
         this.setInitialDateTime()
@@ -70,7 +70,6 @@ export class HomeComponent {
 
     this.http.post<EventResponse>(this.eventsUri, this.newEvent).
       subscribe(result => {
-        console.info(result.data.eventToken)
         // set initial dt is not really required since we navigate away anyway
         this.setInitialDateTime()
         let selfRoute = result.hrefs['self']
@@ -115,7 +114,6 @@ interface OptimaResponse {
 }
 
 export class EventData {
-  eventToken: string
   title: string
   location: string
   start: Date
@@ -128,7 +126,7 @@ interface EventResponse {
 }
 
 interface EventsInfoResponse {
-  permissions: [string]
+  hrefs: { [key: string]: string; };
 }
 
 interface TocResponse {

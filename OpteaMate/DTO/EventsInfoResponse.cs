@@ -9,6 +9,5 @@ namespace opteamate {
     public string Type => WebApiResponseType.Collection.ToString();
     public object Data { get; }
     public IDictionary<string, string> Hrefs { get; } = new Dictionary<string, string>();
-    public IList<string> Permissions { get; } = new List<string>();
   }
 }

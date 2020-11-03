@@ -7,33 +7,42 @@
 @inject ClipboardService ClipboardService
 @inject IJSRuntime JsRuntime
 
-<h1>T&auml;tschmeister</h1>
+<table>
+    <thead>
+        <tr>
+            <td width="100%">
+                <h1>Opteamate</h1>
+            </td>
+            <td align="right" valign="top">
+                <button (click)="CopyLinkToClipboard()">In die URL in die Zwischenablage</button>
+            </td>
+        </tr>
+        <tr>
+            @if (string.IsNullOrEmpty(backRoute)) {
+                <td width="100%"><a href="/">zur Startseite</a></td>
+                <td></td>
+            }
+            else {
+                <td width="100%"></td>
+                <td align="right"><a href="@backRoute">Zur&uuml;ck zur Serie</a></td>
+            }
+        </tr>
+    </thead>
+</table>
 
-@if (!string.IsNullOrEmpty(backRoute))
-{
-    <p>
-        <a href="@backRoute">Zur&uuml;ck zur Serie</a>
-    </p>
-}
 
-
-@if (currentEvent != null)
-{
+@if (currentEvent != null) {
     <h3>@currentEvent.data.title, @currentEvent.data.location, @eventStartTime.ToLocalTime().ToShortDateString(), @eventStartTime.ToLocalTime().ToShortTimeString()</h3>
 
-    @if (string.IsNullOrEmpty(backRoute))
-    {
+    @if (string.IsNullOrEmpty(backRoute)) {
         <div>
             Anzahl Registrierungen insgesamt: @stats.TotNumRegistrations
             <br />
-            URL: @eventUrl
-            <button (click)="CopyLinkToClipboard()">In die Zwischenablage</button>
         </div>
     }
 }
 
-@if (stats.theOptima.Any())
-{
+@if (stats.theOptima.Any()) {
     <table>
         <thead>
             <tr>
@@ -45,8 +54,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var i in stats.theOptima)
-            {
+            @foreach (var i in stats.theOptima) {
                 <tr>
                     <td>@i.Key</td>
                     <td>@i.Value.registrations</td>
@@ -64,16 +72,14 @@
     <input @bind="@newRegistration.name" />
     <label>Position</label>
     <select @bind="selectedPosition">
-        @foreach (var item in positions)
-        {
+        @foreach (var item in positions) {
             <option value="@item">@item</option>
         }
     </select>
     <button class="btn-primary" @onclick="AddRegistration">Hinzuf&uuml;gen</button>
 </form>
 
-@if (registrations != null)
-{
+@if (registrations != null) {
     <table>
         <thead>
             <tr>
@@ -83,26 +89,23 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var pos in positions)
-            {
-                @foreach (var reg in registrations.Where(r => r.position == pos && !r.transientScratch))
-                {
+            @foreach (var pos in positions) {
+                @foreach (var reg in registrations.Where(r => r.data.position == pos && !r.data.transientScratch)) {
                     <tr style="background-color: #abffab;">
-                        <td>@reg.name</td>
-                        <td>@reg.position</td>
+                        <td>@reg.data.name</td>
+                        <td>@reg.data.position</td>
                         <td>
-                            <button color="standard" @onclick="(() => DeleteRegistration(reg.registrationId))">L&ouml;schen</button>
+                            <button color="standard" @onclick="(() => DeleteRegistration(reg.id))">L&ouml;schen</button>
                         </td>
                     </tr>
                 }
 
-                @foreach (var reg in registrations.Where(r => r.position == pos && r.transientScratch))
-                {
+                @foreach (var reg in registrations.Where(r => r.data.position == pos && r.data.transientScratch)) {
                     <tr style="background-color: #ffafaf;">
-                        <td>@reg.name</td>
-                        <td>@reg.position</td>
+                        <td>@reg.data.name</td>
+                        <td>@reg.data.position</td>
                         <td>
-                            <button color="standard" @onclick="(() => DeleteRegistration(reg.registrationId))">L&ouml;schen</button>
+                            <button color="standard" @onclick="(() => DeleteRegistration(reg.id))">L&ouml;schen</button>
                         </td>
                     </tr>
                 }
@@ -116,20 +119,27 @@
   [Parameter]
   public string EventToken { get; set; }
 
-  const string ServiceEndpoint = "http://localhost:4700/";
+  const string TocServiceEndpoint = "http://localhost:4700/api/toc";
+  string optimaServiceEndpoint;
+  string eventsServiceEndpoint;
+
   EventResponse currentEvent;
   long eventId;
   string eventUrl;
   DateTime eventStartTime;
-  RegistrationData[] registrations;
+  RegistrationResponse[] registrations;
   string[] positions = new string[0];
   StatisticData stats = new StatisticData();
   RegistrationData newRegistration = new RegistrationData();
   string selectedPosition;
   string backRoute;
 
-  protected override async Task OnInitializedAsync()
-  {
+  protected override async Task OnInitializedAsync() {
+      // Get the URLs from the toc service
+      var responseToc = await Http.GetFromJsonAsync<TocResponse>(TocServiceEndpoint);
+      optimaServiceEndpoint = responseToc.hrefs["optima"];
+      eventsServiceEndpoint = responseToc.hrefs["events"];
+
       eventUrl = NavigationManager.BaseUri + "enroll/" + EventToken;
       await GetEventByEventToken();
   }
@@ -142,34 +152,29 @@
   //    }
   //}
 
-  async Task AddRegistration()
-  {
+  async Task AddRegistration() {
       newRegistration.creationTime = DateTime.Now.ToUniversalTime();
       newRegistration.position = selectedPosition;
-      string request = ServiceEndpoint +  "api/events/" + eventId + "/registrations";
+      string request = eventsServiceEndpoint + eventId + "/registrations";
       await Http.PostAsJsonAsync<RegistrationData>(request, newRegistration);
 
       await GetEvent();
   }
 
-  async Task DeleteRegistration(long regId)
-  {
-      string request = ServiceEndpoint + "api/events/" + eventId + "/registrations/" + regId;
+  async Task DeleteRegistration(long regId) {
+      string request = eventsServiceEndpoint + eventId + "/registrations/" + regId;
       await Http.DeleteAsync(request);
 
       await GetEvent();
   }
 
-  async Task GetEventByEventToken()
-  {
-      string request = ServiceEndpoint + "api/events/byevent?token=" + EventToken;
+  async Task GetEventByEventToken() {
+      string request = eventsServiceEndpoint + "byevent?token=" + EventToken;
       var response = await Http.GetFromJsonAsync<EventsResponse>(request);
 
-      foreach (var evt in response.data)
-      {
-          if (evt.data.eventToken == new Guid(EventToken))
-          {
-              eventId = evt.data.eventId;
+      foreach (var evt in response.data) {
+          if (evt.data.eventToken == new Guid(EventToken)) {
+              eventId = evt.id;
               break;
           }
       }
@@ -177,29 +182,25 @@
       //await CopyLinkToClipboard();
   }
 
-  async Task GetEvent()
-  {
-      string request = ServiceEndpoint + "api/events/" + eventId;
+  async Task GetEvent() {
+      string request = eventsServiceEndpoint + eventId;
       var response = await Http.GetFromJsonAsync<EventResponse>(request);
       currentEvent = response;
-      backRoute = currentEvent.links.ContainsKey("back") ? currentEvent.links["back"] : null;
+      backRoute = currentEvent.hrefs.ContainsKey("back") ? currentEvent.hrefs["back"] : null;
       eventStartTime = response.data.start;
-      if (response.registrations != null && response.registrations.data != null)
-      {
+      if (response.registrations != null && response.registrations.data != null) {
           registrations = response.registrations.data;
           stats.TotNumRegistrations = response.registrations.data.Length;
       }
-      else
-      {
+      else {
           registrations = null;
           stats.TotNumRegistrations = 0;
       }
       await GetPositions(currentEvent.data.optimumId);
   }
 
-  async Task GetPositions(long optId)
-  {
-      string request = ServiceEndpoint + "api/optima/" + optId;
+  async Task GetPositions(long optId) {
+      string request = optimaServiceEndpoint + optId;
       var response = await Http.GetFromJsonAsync<OptimumResponse>(request);
       var posStr = response.data.positions;
       positions = posStr.Split(';');
@@ -207,71 +208,57 @@
       FillStats(response);
   }
 
-  void FillStats(OptimumResponse response)
-  {
+  void FillStats(OptimumResponse response) {
       var stratStr = response.data.strategies;
       var strategies = stratStr.Split(';');
 
-      foreach (var pos in positions)
-      {
+      foreach (var pos in positions) {
           stats.prevOptima[pos] = 0;
       }
 
-      for (var s = 0; s < strategies.Length; s++)
-      {
+      for (var s = 0; s < strategies.Length; s++) {
           var optimaStrs = strategies[s].Split('-');
 
-          for (var p = 0; p < positions.Length; p++)
-          {
+          for (var p = 0; p < positions.Length; p++) {
               var pos = this.positions[p];
               var statData = new OptimumStatData();
-              statData.registrations = this.registrations == null ? 0 : this.registrations.Count(item => item.position == pos);
+              statData.registrations = this.registrations == null ? 0 : this.registrations.Count(item => item.data.position == pos);
 
-              if (optimaStrs[p] == "*")
-              {
+              if (optimaStrs[p] == "*") {
                   statData.nextOptimum = statData.registrations + 1;
                   statData.missing = 0;
                   statData.remaining = 0;
               }
-              else
-              {
+              else {
                   statData.nextOptimum = int.Parse(optimaStrs[p]);
                   var diff = statData.nextOptimum - statData.registrations;
                   statData.missing = Math.Max(0, diff);
-                  if ((diff < 0 && stats.prevOptima[pos] == 0) || (statData.missing == 0 && s == strategies.Length - 1))
-                  {
+                  if ((diff < 0 && stats.prevOptima[pos] == 0) || (statData.missing == 0 && s == strategies.Length - 1)) {
                       statData.remaining = statData.registrations - statData.nextOptimum;
                   }
-                  else
-                  {
+                  else {
                       statData.remaining = statData.registrations - stats.prevOptima[pos];
                   }
               }
               stats.theOptima[pos] = statData;
           }
           var continueCondition = (s != strategies.Length - 1);
-          foreach (var pos in positions)
-          {
+          foreach (var pos in positions) {
               var statData = this.stats.theOptima[pos];
               var diff = statData.nextOptimum - statData.registrations;
-              if (diff > 0)
-              {
+              if (diff > 0) {
                   continueCondition = false;
               }
               stats.prevOptima[pos] = statData.nextOptimum;
           }
-          if (!continueCondition)
-          {
-              foreach (var pos in positions)
-              {
+          if (!continueCondition) {
+              foreach (var pos in positions) {
                   var statData = this.stats.theOptima[pos];
-                  if (statData.remaining > 0 && this.registrations != null)
-                  {
-                      var regForPos = this.registrations.Where(item => item.position == pos).ToList();
-                      regForPos.Sort((a, b) => DateTime.Compare(b.creationTime, a.creationTime));
-                      for (var n = 0; n < statData.remaining; n++)
-                      {
-                          regForPos[n].transientScratch = true;
+                  if (statData.remaining > 0 && this.registrations != null) {
+                      var regForPos = this.registrations.Where(item => item.data.position == pos).ToList();
+                      regForPos.Sort((a, b) => DateTime.Compare(b.data.creationTime, a.data.creationTime));
+                      for (var n = 0; n < statData.remaining; n++) {
+                          regForPos[n].data.transientScratch = true;
                       }
                   }
               }
@@ -280,50 +267,41 @@
       }
   }
 
-  async Task CopyLinkToClipboard()
-  {
+  async Task CopyLinkToClipboard() {
       // Writing to the clipboard may be denied, so you must handle the exception
-      try
-      {
+      try {
           await ClipboardService.WriteTextAsync(eventUrl);
       }
-      catch
-      {
+      catch {
           Console.WriteLine("Cannot write text to clipboard");
       }
   }
 
-  private class OptimumStatData
-  {
+  private class OptimumStatData {
       public int nextOptimum { get; set; }
       public int registrations { get; set; }
       public int missing { get; set; }
       public int remaining { get; set; }
   }
 
-  private class StatisticData
-  {
+  private class StatisticData {
       public int TotNumRegistrations { get; set; }
       public Dictionary<string, OptimumStatData> theOptima = new Dictionary<string, OptimumStatData>();
       public Dictionary<string, int> prevOptima = new Dictionary<string, int>();
   }
 
-  private class OptimumData
-  {
-      public long optimumId { get; set; }
+  private class OptimumData {
       public string name { get; set; }
       public string strategies { get; set; }
       public string positions { get; set; }
   }
 
-  private class OptimumResponse
-  {
+  private class OptimumResponse {
+      public long id { get; set; }
       public OptimumData data { get; set; }
   }
 
-  private class RegistrationData
-  {
-      public long registrationId { get; set; }
+  private class RegistrationData {
       public string name { get; set; }
       public string position { get; set; }
       public string sponsorOf { get; set; }
@@ -331,15 +309,18 @@
       public bool transientScratch { get; set; }
   }
 
-  private class RegistrationsResponse
-  {
-      public RegistrationData[] data { get; set; }
-      public Dictionary<string, string> links { get; set; }
+  private class RegistrationResponse {
+      public long id { get; set; }
+      public RegistrationData data { get; set; }
+      public Dictionary<string, string> hrefs { get; set; }
   }
 
-  private class EventData
-  {
-      public long eventId { get; set; }
+  private class RegistrationsResponse {
+      public RegistrationResponse[] data { get; set; }
+      public Dictionary<string, string> hrefs { get; set; }
+  }
+
+  private class EventData {
       public Guid eventToken { get; set; }
       public string title { get; set; }
       public string location { get; set; }
@@ -347,16 +328,20 @@
       public long optimumId { get; set; }
   }
 
-  private class EventResponse
-{
+  private class EventResponse {
+      public long id { get; set; }
       public EventData data { get; set; }
-      public Dictionary<string, string> links { get; set; }
       public RegistrationsResponse registrations { get; set; }
+      public Dictionary<string, string> hrefs { get; set; }
   }
 
-  private class EventsResponse
-  {
+  private class EventsResponse {
       public EventResponse[] data { get; set; }
-      public Dictionary<string, string> links { get; set; }
+      public Dictionary<string, string> hrefs { get; set; }
   }
+
+  private class TocResponse {
+      public Dictionary<string, string> hrefs { get; set; }
+  }
+
 }

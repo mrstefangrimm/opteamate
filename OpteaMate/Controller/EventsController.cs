@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,26 +20,42 @@ namespace opteamate {
       _context = context;
     }
 
-    // GET: api/events/info
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     GET api/events/info
+    ///     {      
+    ///         "type": "Collection"
+    ///         "data" : null
+    ///         "hrefs":
+    ///         {
+    ///             "post": api/events
+    ///         }
+    ///     }
+    /// </remarks>
     [HttpGet("info")]
+    [ProducesResponseType(typeof(EventsInfoResponse), StatusCodes.Status200OK)]
     public IActionResult GetEventsInfo() {
 
       var response = new EventsInfoResponse();
 
       // PostEvent
-      response.AddPermission(PermissionsType.POST);
+      response.AddHref(HrefType.POST, "api/events");
       return Ok(response);
     }
 
     // GET: api/events
     [HttpGet]
+    [ProducesResponseType(typeof(EventsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status401Unauthorized)]
     public IActionResult GetEvents() {
-      var response = new EventsResponse();
 
       var headers = HttpContext.Request.Headers["user"];
       bool isAdmin = headers.Contains("admin");
 
       if (isAdmin) {
+        var response = new EventsResponse();
+
         var evtsDbo = _context.Events.ToList();
         if (evtsDbo.Count > 0) {
           // Do not load registration to reduce network traffic _context.Registrations.Load();
@@ -49,16 +66,89 @@ namespace opteamate {
             response.Data.Add(CreateEventResponse(evtDbo));
           }
         }
+        // PostEvent
+        response.AddHref(HrefType.POST, "api/events");
+
+        return Ok(response);
+      }
+      
+      return Unauthorized();    
+    }
+
+    //GET "http://localhost:5000/api/events/bytoken?key=event&token=0000-abcd"
+    [HttpGet("byToken")]
+    [ProducesResponseType(typeof(EventsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
+    public IActionResult GetEvents(string key, Guid token) {
+
+      Func<EventDbo, bool> comp = null;
+      if (key == "event") { comp = a => a.EventToken == token; }
+      else if (key == "series") { comp = a => a.SeriesToken == token; }
+      if (comp != null) {
+        var response = new EventsResponse { Data = new List<EventResponse>() };
+
+        var matches = _context.Events.Where(comp);
+        foreach (EventDbo evtDbo in matches) {
+          var evtDto = CreateEventResponse(evtDbo);
+          response.Data.Add(evtDto);
+        }
+
+        // PostEvent
+        response.AddHref(HrefType.POST, "api/events");
+
+        return Ok(response);
+      }
+      return NotFound();
+    }
+
+    //GET "http://localhost:5000/api/events/byevent?token=0000-abcd"
+    [HttpGet("byEvent")]
+    [ProducesResponseType(typeof(EventsResponse), StatusCodes.Status200OK)]
+    public IActionResult GetEventsByEventToken(Guid token) {
+      var response = new EventsResponse();
+
+      var matches = _context.Events.Where(a => a.EventToken == token);
+      if (matches.Any()) {
+        response.Data = new List<EventResponse>();
+        _context.Registrations.Load();
+        foreach (EventDbo evtDbo in matches) {
+          var evtDto = CreateEventResponse(evtDbo);
+          response.Data.Add(evtDto);
+        }
       }
 
       // PostEvent
-      response.AddPermission(PermissionsType.POST);
+      response.AddHref(HrefType.POST, "api/events");
+
+      return Ok(response);
+    }
+
+    //GET "http://localhost:5000/api/events/byseries?token=0000-abcd"
+    [HttpGet("bySeries")]
+    [ProducesResponseType(typeof(EventsResponse), StatusCodes.Status200OK)]
+    public IActionResult GetEventsBySeriesToken(Guid token) {
+      var response = new EventsResponse();
+
+      var matches = _context.Events.Where(a => a.SeriesToken == token);
+      if (matches.Any()) {
+        response.Data = new List<EventResponse>();
+
+        foreach (EventDbo evtDbo in matches) {
+          var evtDto = CreateEventResponse(evtDbo);
+          response.Data.Add(evtDto);
+        }
+      }
+
+      // PostEvent
+      response.AddHref(HrefType.POST, "api/events");
 
       return Ok(response);
     }
 
     // GET: api/events/5/registrations/info
     [HttpGet("{id}/registrations/info")]
+    [ProducesResponseType(typeof(RegistrationsInfoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetEventRegistrationsInfo(long id) {
 
       var evtDbo = _context.Events.Find(id);
@@ -85,7 +175,7 @@ namespace opteamate {
       bool mutable = evtDbo.Deadline.HasValue ? evtDbo.Deadline > DateTime.Now.ToUniversalTime() : evtDbo.Start > DateTime.Now.ToUniversalTime();
       if (mutable) {
         // PostEventRegistration
-        response.AddPermission(PermissionsType.POST);
+        response.AddHref(HrefType.POST, $"api/events/{id}/registrations");
       }
 
       //response.Data.NumRegistrations = await numRegCountTask;
@@ -101,6 +191,8 @@ namespace opteamate {
 
     // GET: api/events/5
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetEvent(long id) {
       // Not sure if async is makes a difference:
       // https://stackoverflow.com/questions/30042791/entity-framework-savechanges-vs-savechangesasync-and-find-vs-findasync
@@ -113,77 +205,19 @@ namespace opteamate {
       return Ok(evtDto);
     }
 
-    //GET "http://localhost:5000/api/events/bytoken?key=event&token=0000-abcd"
-    [HttpGet("byToken")]
-    public IActionResult GetEvents(string key, Guid token) {
-
-      Func<EventDbo, bool> comp = null;
-      if (key == "event") { comp = a => a.EventToken == token; }
-      else if (key == "series") { comp = a => a.SeriesToken == token; }
-      if (comp != null) {
-        var response = new EventsResponse { Data = new List<EventResponse>() };
-
-        var matches = _context.Events.Where(comp);
-        foreach (EventDbo evtDbo in matches) {
-          var evtDto = CreateEventResponse(evtDbo);
-          response.Data.Add(evtDto);
-        }
-
-        // PostEvent
-        response.AddPermission(PermissionsType.POST);
-
-        return Ok(response);
-      }      
-      return NotFound();
-    }
-
-    //GET "http://localhost:5000/api/events/byevent?token=0000-abcd"
-    [HttpGet("byEvent")]
-    public IActionResult GetEventsByEventToken(Guid token) {
-      var response = new EventsResponse();
-
-      var matches = _context.Events.Where(a => a.EventToken == token);
-      if (matches.Any())
-      {
-        response.Data = new List<EventResponse>();
-        _context.Registrations.Load();
-        foreach (EventDbo evtDbo in matches)
-        {
-          var evtDto = CreateEventResponse(evtDbo);
-          response.Data.Add(evtDto);
-        }
-
-        // PostEvent
-        response.AddPermission(PermissionsType.POST);
-
-        return Ok(response);
-      }
-      return NotFound();
-    }
-
-    //GET "http://localhost:5000/api/events/byseries?token=0000-abcd"
-    [HttpGet("bySeries")]
-    public IActionResult GetEventsBySeriesToken(Guid token) {
-      var response = new EventsResponse();
-
-      var matches = _context.Events.Where(a => a.SeriesToken == token);
-      if (matches.Any()) {
-        response.Data = new List<EventResponse>();
-
-        foreach (EventDbo evtDbo in matches) {
-          var evtDto = CreateEventResponse(evtDbo);
-          response.Data.Add(evtDto);
-        }
-
-        // PostEvent
-        response.AddPermission(PermissionsType.POST);
-
-        return Ok(response);
-      }
-      return NotFound();
-    }
-
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     POST api/events
+    ///     {        
+    ///         "title": "practice session",
+    ///         "location": "ice rink #2",
+    ///         "start": "2020-11-02T21:15",
+    ///         "optimumId": 1
+    ///     }
+    /// </remarks>
     [HttpPost]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> PostEvent(EventData evt) {
 
       var evtDbo = new EventDbo();
@@ -274,6 +308,8 @@ namespace opteamate {
 
     // DELETE: api/events/5
     [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
     public IActionResult DeleteEvent(long id) {
 
       var evtDbo = _context.Events.Find(id);
@@ -332,13 +368,12 @@ namespace opteamate {
         response.AddHref(HrefType.BACK, "series/" + dbo.SeriesToken);
       }
       // DeleteEvent; also possible to delete past events
-      response.AddPermission(PermissionsType.DELETE);
+      response.AddHref(HrefType.DELETE, $"api/events/{dbo.EventDboId}");
 
       if (mutable) {
         // PostEventRegistration
-        response.Registrations.AddPermission(PermissionsType.POST);
+        response.Registrations.AddHref(HrefType.POST, $"api/events/{dbo.EventDboId}/registrations");
       }
-
       return response;
     }
 
@@ -346,7 +381,7 @@ namespace opteamate {
       var response = new RegistrationResponse { Id = dbo.RegistrationDboId, Data = new RegistrationData() };
       response.Data.CopyFrom(dbo);
       if (mutable) {
-        response.AddPermission(PermissionsType.DELETE);
+        response.AddHref(HrefType.DELETE, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
       }
       return response;
     }

@@ -60,7 +60,7 @@ export class SeriesComponent {
         this.http.get<EventsInfoResponse>(this.eventsUri + 'info')
           .subscribe(result => {
             console.log(result)
-            this.postPermission = result.permissions.includes('post')
+            this.postPermission = result.hrefs.hasOwnProperty('post')
           }, error => console.error(error))
 
         this.setInitialDateTime()
@@ -105,9 +105,8 @@ export class SeriesComponent {
     this.http.get<EventsResponse>(request)
       .subscribe(result => {
         console.log(result)
-        if (result != null) {
-          this.events = result.data
-
+        this.events = result.data
+        if (this.events != null) {
           this.events.forEach(
             e => {
               let infoRequest = this.eventsUri + e.id + '/registrations/info'
@@ -172,7 +171,7 @@ interface OptimaResponse {
 }
 
 interface RegistrationsResponse {
-  permissions: [string]
+  hrefs: { [key: string]: string; };
 }
 
 export class EventData {
@@ -190,19 +189,17 @@ export class EventData {
 interface EventResponse {
   id: number
   data: EventData
-  hrefs: { [key: string]: string; };
   registrations: RegistrationsResponse
-  permissions: [string]
+  hrefs: { [key: string]: string; };
 }
 
 interface EventsResponse {
   data: EventResponse[]
   hrefs: { [key: string]: string }
-  permissions: [string]
 }
 
 interface EventsInfoResponse {
-  permissions: [string]
+  hrefs: { [key: string]: string; };
 }
 
 interface RegistrationsInfoData {

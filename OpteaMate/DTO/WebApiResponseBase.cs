@@ -8,6 +8,5 @@ namespace opteamate {
     public abstract string Type { get;  }
     public TDATA Data { get; set; }
     public IDictionary<string, string> Hrefs { get; } = new Dictionary<string, string>();
-    public IList<string> Permissions { get; } = new List<string>();
   }
 }

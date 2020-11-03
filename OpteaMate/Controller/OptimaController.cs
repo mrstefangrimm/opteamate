@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace opteamate {
 
     // GET: api/optima
     [HttpGet]
+    [ProducesResponseType(typeof(OptimaResponse), StatusCodes.Status200OK)]
     public IActionResult GetOptima() {
       var response = new OptimaResponse();
 
@@ -39,6 +41,8 @@ namespace opteamate {
 
     // GET: api/optima/2
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(OptimumResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
     public IActionResult GetOptimum(long id) {
 
       var optimum = _context.Optima.First(o => o.OptimumDboId == id);
@@ -53,7 +57,6 @@ namespace opteamate {
       response.Data.CopyFrom(dbo);
 
       var linkOpt = Url.ActionLink(nameof(GetOptimum), null, new { dbo.OptimumDboId });
-      response.AddPermission(PermissionsType.GET);
 
       return response;
     }

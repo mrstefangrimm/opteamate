@@ -48,16 +48,15 @@
         <td>{{getLocaleDt(ev.data.start) | date :'dd.MM.yyyy H:mm'}}</td>
         <td>{{ev.data.title}}</td>
         <td>{{ev.data.location}}</td>
-        <td *ngIf="ev.registrations.permissions.includes('post')">
-          <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
+        <td *ngIf="ev.registrations.hrefs.hasOwnProperty('post')">
           <a [routerLink]="getLink(ev.data.eventToken)">Registrieren...</a>
         </td>
-        <td *ngIf="!ev.registrations.permissions.includes('post')"> <a [routerLink]="getLink(ev.data.eventToken)">Teilnahmen...</a></td>
+        <td *ngIf="!ev.registrations.hrefs.hasOwnProperty('post')"> <a [routerLink]="getLink(ev.data.eventToken)">Teilnahmen...</a></td>
         <td>{{ev.data.registrationsCount}}</td>
         <td *ngIf="ev.data.hasSponsors">Ja</td>
         <td *ngIf="!ev.data.hasSponsors">Nein</td>
         <td>
-          <button *ngIf="ev.permissions.includes('delete')" mat-raised-button color="standard" (click)="deleteEvent(ev.id)">L&ouml;schen</button>
+          <button *ngIf="ev.hrefs.hasOwnProperty('delete')" mat-raised-button color="standard" (click)="deleteEvent(ev.id)">L&ouml;schen</button>
         </td>
       </tr>
     </tbody>
@@ -79,7 +78,7 @@
       </mat-select>
     </mat-form-field>
   </div>
-  <blockquote>
+  <blockquote *ngIf="selectedOptimum">
     <mat-label>Positionen: {{selectedOptimum.data.positions}}</mat-label><br />
     <mat-label>Optima: {{selectedOptimum.data.strategies}}</mat-label>
   </blockquote>

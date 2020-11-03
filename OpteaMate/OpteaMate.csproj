@@ -86,5 +86,10 @@
   <PropertyGroup>
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;1591</NoWarn>
+    <DocumentationFile>C:\Users\Stefan Grimm\Documents\github\opteamate\OpteaMate\OpteaMate.xml</DocumentationFile>
+  </PropertyGroup>
   
 </Project>

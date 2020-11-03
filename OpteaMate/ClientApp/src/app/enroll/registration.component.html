@@ -50,7 +50,7 @@
 
 <h2>Teilnehmer</h2>
 
-<form *ngIf="registrations && registrations.permissions.includes('post')">
+<form *ngIf="registrations && registrations.hrefs.hasOwnProperty('post')">
 
   <mat-form-field class="example-full-width">
     <mat-label>Name</mat-label>
@@ -100,7 +100,7 @@
       <td style="background-color: #abffab;">{{reg.data.position}}</td>
       <td *ngIf="reg.data.sponsorOf" style="background-color:  #abffab;">{{reg.data.sponsorOf}}</td>
       <td *ngIf="!reg.data.sponsorOf">{{reg.data.sponsorOf}}</td>
-      <td *ngIf="reg.permissions.includes('delete')">
+      <td *ngIf="reg.hrefs.hasOwnProperty('delete')">
         <button mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
       </td>
     </tr>
@@ -109,8 +109,8 @@
       <td style="background-color: #ffafaf;">{{reg.data.position}}</td>
       <td *ngIf="reg.data.sponsorOf" style="background-color: #ffafaf;">{{reg.data.sponsorOf}}</td>
       <td *ngIf="!reg.data.sponsorOf">{{reg.data.sponsorOf}}</td>
-      <td *ngIf="reg.permissions.includes('delete')">
-        <button *ngIf="reg.permissions.includes('delete')" mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
+      <td *ngIf="reg.hrefs.hasOwnProperty('delete')">
+        <button mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
       </td>
     </tr>
   </tbody>

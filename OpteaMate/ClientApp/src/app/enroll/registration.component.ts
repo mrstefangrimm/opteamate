@@ -270,13 +270,11 @@ export interface RegistrationResponse {
   id: string
   data: RegistrationData
   hrefs: { [key: string]: string }
-  permissions: [string]
 }
 
 interface RegistrationsResponse {
   data: RegistrationResponse[]
   hrefs: { [key: string]: string }
-  permissions: [string]
 }
 
 interface EventData {

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace opteamate {
@@ -14,6 +15,7 @@ namespace opteamate {
 
     // GET: api/toc
     [HttpGet]
+    [ProducesResponseType(typeof(TocResponse), StatusCodes.Status200OK)]
     public IActionResult GetToc() {
       var response = new TocResponse();
   
@@ -23,7 +25,6 @@ namespace opteamate {
       response.AddHref(HrefType.ROOT, baseUrl + "/api/");
       response.AddHref(HrefType.EVENTS, baseUrl + "/api/events/");
       response.AddHref(HrefType.OPTIMA, baseUrl + "/api/optima/");
-      response.AddPermission(PermissionsType.GET);
 
       return Ok(response);
     }

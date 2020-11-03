@@ -9,15 +9,12 @@ namespace opteamate {
   }
 
   internal enum HrefType {
-    SELF,
-    BACK,
-    ROOT,
-    EVENTS,
-    OPTIMA
-  }
-
-  internal enum PermissionsType {
-    GET,
+    SELF,   // Domain specific
+    BACK,   // Domain specific
+    ROOT,   // Domain specific
+    EVENTS, // Domain specific
+    OPTIMA, // Domain specific
+    // GET, Get of a collection is always possible
     POST,
     PUT,
     PATCH,
@@ -25,14 +22,8 @@ namespace opteamate {
   }
 
   internal static class WebApiUtil {
-
     public static void AddHref(this IWebApiResponse target, HrefType type, string value) {
       target.Hrefs.Add(type.ToString().ToLower(), value?.ToLower());
     }
-
-    public static void AddPermission(this IWebApiResponse target, PermissionsType type) {
-      target.Permissions.Add(type.ToString().ToLower());
-    }
-
   }
 }

@@ -8,6 +8,5 @@ namespace opteamate {
   interface IWebApiResponse {
     string Type { get; }
     IDictionary<string, string> Hrefs { get; }
-    IList<string> Permissions { get; }
   }
 }

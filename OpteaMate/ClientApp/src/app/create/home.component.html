@@ -17,21 +17,21 @@
 
 <hr />
 
-<form *ngIf="postPermission">
+<table>
+  <thead>
+    <tr>
+      <td width="50%">
+        <h2>Neuer Anlass</h2>
+      </td>
+      <td width="10%"></td>
+      <td width="40%" align="right">
+        <a [routerLink]="['/series/' + nextSeriesToken]"><h4>Neue Serie von Anl&auml;ssen</h4></a>
+      </td>
+    </tr>
+  </thead>
+</table>
 
-  <table>
-    <thead>
-      <tr>
-        <td width="50%">
-          <h2>Neuer Anlass</h2>
-        </td>
-        <td width="10%"></td>
-        <td width="40%" align="right">
-          <a [routerLink]="['/series/' + nextSeriesToken]"><h4>Neue Serie von Anl&auml;ssen</h4></a>
-        </td>
-      </tr>
-    </thead>
-  </table>
+<form *ngIf="postPermission">
 
   <div *ngIf="selectedOptimum">
     <mat-form-field>
@@ -41,7 +41,7 @@
       </mat-select>
     </mat-form-field>
   </div>
-  <blockquote>
+  <blockquote *ngIf="selectedOptimum">
     <mat-label>Positionen: {{selectedOptimum.data.positions}}</mat-label><br />
     <mat-label>Optima: {{selectedOptimum.data.strategies}}</mat-label>
   </blockquote>
@@ -139,5 +139,5 @@
   <p><u>Wer steckt hinter Opteamate?</u></p>
   <blockquote>Eine Einzelperson. Ich habe das Projekt als „Warm-Up“ gestartet, um mich mit Webtechnologien vertraut zu machen.</blockquote>
   <blockquote>Der Programmcode ist Open Source und auf <a href="https://github.com/mrstefangrimm/opteamate">Github</a>.</blockquote>
-  
+
 </section>
