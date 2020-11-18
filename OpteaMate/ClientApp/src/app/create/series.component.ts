@@ -5,6 +5,9 @@ import { Component, Inject  } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { HttpClient } from '@angular/common/http'
 import { DateAdapter } from '@angular/material/core'
+import { MatDialogConfig, MatDialog } from '@angular/material/dialog'
+import { EventEditComponent } from '../nested-views/event-edit.component'
+import { EventViewComponentInput, EventViewComponentOutput } from '../nested-views/event-view.component'
 
 @Component({
   selector: 'app-home',
@@ -15,25 +18,24 @@ export class SeriesComponent {
 
   eventsUri: string
   optimaUri: string
+  seriesToken: string
 
   events: EventResponse[]
-  newEvent: EventData = new EventData()
 
   postPermission: boolean
-  seriesToken: string
-  selectedOptimum: OptimumResponse
-  optima: OptimumResponse[]
-  selectedHour: number
-  selectedMinutes: number
-  selectedDate: Date
-  seriesUrl: string
+  eventViewInput: EventViewComponentInput = new EventViewComponentInput()
+
 
   constructor(private route: ActivatedRoute,
     private readonly http: HttpClient,
     private dateAdapter: DateAdapter<Date>,
+    private dialog: MatDialog,
     @Inject('BASE_URL') private readonly baseUrl: string) {
 
     this.dateAdapter.setLocale('de');
+
+    this.eventViewInput.title = 'Anlass Hinzufügen'
+    this.eventViewInput.buttonText = 'Hinzufügen'
 
     let tocRequest = this.baseUrl + 'api/toc'
     this.http.get<TocResponse>(tocRequest)
@@ -46,24 +48,14 @@ export class SeriesComponent {
 
         this.route.params.subscribe(params => {
           this.seriesToken = params.seriestoken
-          this.seriesUrl = this.baseUrl + "series/" + this.seriesToken
           this.getEventsBySeriesToken()
-        })
-
-        this.http.get<OptimaResponse>(this.optimaUri)
-          .subscribe(result => {
-            console.log(result)
-            this.optima = result.data
-            this.selectedOptimum = this.optima[0]
-          }, error => console.error(error))
+        })      
 
         this.http.get<EventsInfoResponse>(this.eventsUri + 'info')
           .subscribe(result => {
             console.log(result)
             this.postPermission = result.hrefs.hasOwnProperty('post')
           }, error => console.error(error))
-
-        this.setInitialDateTime()
 
       }, error => console.error(error))
   }
@@ -79,23 +71,73 @@ export class SeriesComponent {
     return dt
   }
 
-  addEvent() {
-    this.newEvent.start = this.selectedDate
-    this.newEvent.start.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
-    console.info(this.newEvent.start)
-    this.newEvent.optimumId = this.selectedOptimum.id
-    this.newEvent.seriesToken = this.seriesToken
+  editEvent(evtId: number) {
 
-    this.http.post<EventData>(this.eventsUri, this.newEvent).subscribe(result => {
-      this.getEventsBySeriesToken()
-      this.setInitialDateTime()
-    }, error => console.error(error))
+    this.events.forEach(evt => {
+      if (evt.id == evtId) {
+        const dialogConfig = new MatDialogConfig()
+        dialogConfig.disableClose = false
+        dialogConfig.autoFocus = true
+
+        // utc-to-local time
+        let dt = new Date(evt.data.start)
+        let dtMs = dt.getTime() - dt.getTimezoneOffset() * 60000
+        dt.setTime(dtMs)
+        dialogConfig.data = {
+          eventId: evtId,
+          eventTitle: evt.data.title,
+          eventLocation: evt.data.location,
+          eventStartTime: dt,
+          canDelete: evt.hrefs.hasOwnProperty('delete')
+        }
+
+        console.info(evt.data.start)
+        const dialogRef = this.dialog.open(EventEditComponent, dialogConfig)
+        dialogRef.afterClosed().subscribe(
+          data => {
+            if (data != null && data.data != null) {
+              console.info(data.data)
+              if (data.data.deleteEvent == true) {
+                let request = this.eventsUri + evtId                
+                this.http.delete(request)
+                  .subscribe(result => {
+                    this.getEventsBySeriesToken()
+                  }, error => console.error(error))
+              }
+              else {
+                var evt = new EventData()
+                evt.title = data.data.eventTitle
+                evt.location = data.data.eventLocation
+                evt.start = data.data.eventStartTime
+
+                console.info(data.data.eventStartTime)
+                console.info(data.data.eventTitle)
+                console.info(data.data.eventLocation)
+
+                console.info(evt)
+                let request = this.eventsUri + evtId
+                this.http.patch<EventData>(request, evt)
+                  .subscribe(result => {
+                    this.getEventsBySeriesToken()
+                  }, error => console.error(error))
+              }
+            }
+          }
+        )
+      }
+    })
   }
 
-  deleteEvent(evtId: string) {
-    let request = this.eventsUri + evtId
-    this.http.delete(request)
-      .subscribe(result => {
+  onNotify(args: EventViewComponentOutput) {
+    var newEvent = new EventData()
+    newEvent.title = args.title
+    newEvent.location = args.location
+    newEvent.optimumId = args.optimumId
+    newEvent.start = args.start
+    newEvent.seriesToken = this.seriesToken
+
+    this.http.post<EventResponse>(this.eventsUri, newEvent).
+      subscribe(result => {
         this.getEventsBySeriesToken()
       }, error => console.error(error))
   }
@@ -133,24 +175,6 @@ export class SeriesComponent {
     selBox.select();
     document.execCommand('copy');
     document.body.removeChild(selBox);
-  }
-
-  isFutureDate() {
-    if (this.selectedDate == null) return false
-
-    var selected = this.selectedDate
-    selected.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
-
-    let inFuture = +selected - +new Date() > 1 * 60 * 60 * 1000
-    return inFuture
-  }
-
-  setInitialDateTime() {
-    let currentDate = new Date();
-    this.selectedHour = currentDate.getMinutes() > 30 ? currentDate.getHours() + 1 : currentDate.getHours();
-    this.selectedMinutes = 0;
-    this.selectedDate = currentDate
-    this.selectedDate.setHours(currentDate.getHours() + 24, 0, 0, 0)
   }
 
 }

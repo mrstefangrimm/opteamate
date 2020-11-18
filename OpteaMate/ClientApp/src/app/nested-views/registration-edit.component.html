@@ -1,0 +1,47 @@
+<!-- Copyright (c) 2020 Stefan Grimm. All rights reserved.
+     Licensed under the GPL. See LICENSE file in the project root for full license information.
+-->
+
+<form>
+
+  <mat-form-field class="example-full-width">
+    <mat-label>Name</mat-label>
+    <input required
+           minlength="3"
+           matInput
+           name="name"
+           [(ngModel)]="registrationName"
+           type="text"
+           class="form-control" />
+    <mat-error>Name, mindestens 3 Zeichen</mat-error>
+  </mat-form-field>
+
+  <mat-form-field class="example-full-width">
+    <mat-label>(offeriere)</mat-label>
+    <input matInput
+           name="offers"
+           [(ngModel)]="registrationOffers"
+           type="text"
+           class="form-control" />
+  </mat-form-field>
+
+  <table width="100%">
+    <tbody>
+      <tr>
+        <td align="left">
+          <button mat-icon-button color="standard"
+                  [disabled]="registrationName == null || registrationName.length < 3"
+                  (click)="apply()">
+            <i class="material-icons">done</i>
+          </button>
+          <button mat-icon-button color="standard" (click)="cancel()"><i class="material-icons">cancel</i></button>
+        </td>
+        <td align="right">
+          <button mat-icon-button *ngIf="canDelete" color="standard" (click)="delete()"><i class="material-icons">delete</i></button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+</form>

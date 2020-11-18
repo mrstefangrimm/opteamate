@@ -4,6 +4,9 @@
 import { Component, Inject } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { HttpClient } from '@angular/common/http'
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
+import { EventEditComponent } from '../nested-views/event-edit.component'
+import { RegistrationEditComponent } from '../nested-views/registration-edit.component'
 
 @Component({
   selector: 'app-registration-component',
@@ -20,7 +23,7 @@ export class RegistrationComponent {
 
   newRegistration: RegistrationData = new RegistrationData()
   eventToken: string
-  eventId: string
+  eventId: number
   eventStartTime: Date
   stats: StatisticData = new StatisticData
   positions: string[]
@@ -31,6 +34,7 @@ export class RegistrationComponent {
     private route: ActivatedRoute,
     private readonly http: HttpClient,
     private readonly router: Router,
+    private dialog: MatDialog,
     @Inject('BASE_URL') private readonly baseUrl: string) {
 
     let tocRequest = this.baseUrl + 'api/toc'
@@ -76,14 +80,87 @@ export class RegistrationComponent {
         this.getEvent()
       }, error => console.error(error))
   }
-    
-  deleteRegistration(regId: string) {
-    console.info(regId)
-    let request = this.eventsUri + this.eventId + "/registrations/" + regId
-    this.http.delete(request)
-      .subscribe(result => {
-        this.getEvent()
-      }, error => console.error(error))
+
+  editRegistration(regId: number) {
+
+    let reg = this.registrations.data.find(x => x.id == regId)
+    if (reg != null && reg.id == regId) {
+
+      const dialogConfig = new MatDialogConfig()
+      dialogConfig.disableClose = false
+      dialogConfig.autoFocus = true
+
+      dialogConfig.data = {
+        canDelete: true,
+        registrationName: reg.data.name,
+        registrationOffers: reg.data.sponsorOf
+      }
+
+      const dialogRef = this.dialog.open(RegistrationEditComponent, dialogConfig)
+      dialogRef.afterClosed().subscribe(
+        data => {
+          if (data != null && data.data != null) {
+            console.info(data.data)
+            if (data.data.deleteRegistration == true) {
+              let request = this.eventsUri + this.eventId + "/registrations/" + regId
+              this.http.delete(request)
+                .subscribe(result => {
+                  this.getEvent()
+                }, error => console.error(error))
+            }
+            else {
+              reg.data.name = data.data.registrationName
+              reg.data.sponsorOf = data.data.registrationOffers
+              console.info(reg.data)
+
+              let request = this.eventsUri + this.eventId + "/registrations/" + regId
+              this.http.patch<RegistrationData>(request, reg.data)
+                .subscribe(result => {
+                  this.getEvent()
+                }, error => console.error(error))
+            }
+          }
+        }
+      )
+    }
+  }
+
+  editEvent(evtId: number) {
+
+    const dialogConfig = new MatDialogConfig()
+    dialogConfig.disableClose = false
+    dialogConfig.autoFocus = true
+
+    dialogConfig.data = {
+      eventId: evtId,
+      eventTitle: this.currentEvent.data.title,
+      eventLocation: this.currentEvent.data.location,
+      eventStartTime: this.eventStartTime
+    }
+
+    console.info(this.eventStartTime)
+    const dialogRef = this.dialog.open(EventEditComponent, dialogConfig)
+    dialogRef.afterClosed().subscribe(
+      data => {
+        if (data != null) {
+          var evt = new EventData()
+          evt.title = data.data.eventTitle
+          evt.location = data.data.eventLocation
+          evt.start = data.data.eventStartTime
+
+          console.info(data.data.eventStartTime)
+          console.info(data.data.eventTitle)
+          console.info(data.data.eventLocation)
+
+          console.info(evt)
+          let request = this.eventsUri + evtId
+          this.http.patch<EventData>(request, evt)
+            .subscribe(result => {
+              this.getEvent()
+            }, error => console.error(error))
+        }
+      }
+    )
   }
 
   getEvent() {
@@ -94,6 +171,7 @@ export class RegistrationComponent {
         this.currentEvent = result
         this.backRoute = this.currentEvent.hrefs['back']
 
+        // utc-to-local time
         let dt = new Date(result.data.start)
         let dtMs = dt.getTime() - dt.getTimezoneOffset() * 60000
         dt.setTime(dtMs)
@@ -267,7 +345,7 @@ export class RegistrationData {
 }
 
 export interface RegistrationResponse {
-  id: string
+  id: number
   data: RegistrationData
   hrefs: { [key: string]: string }
 }
@@ -277,7 +355,7 @@ interface RegistrationsResponse {
   hrefs: { [key: string]: string }
 }
 
-interface EventData {
+export class EventData {
   eventToken: string
   title: string
   location: string
@@ -286,7 +364,7 @@ interface EventData {
 }
 
 interface EventResponse {
-  id: string
+  id: number
   data: EventData
   hrefs: { [key: string]: string }
   registrations: RegistrationsResponse

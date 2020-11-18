@@ -110,7 +110,6 @@ namespace opteamate {
       var matches = _context.Events.Where(a => a.EventToken == token);
       if (matches.Any()) {
         response.Data = new List<EventResponse>();
-        _context.Registrations.Load();
         foreach (EventDbo evtDbo in matches) {
           var evtDto = CreateEventResponse(evtDbo);
           response.Data.Add(evtDto);
@@ -158,19 +157,7 @@ namespace opteamate {
         Data = new RegistrationsInfoData()
       };
 
-      //var numRegCountTask = _context.Registrations.CountAsync(reg => reg.EventDboId == id);
-      //var sponsorsTask = _context.Registrations.AnyAsync(reg => reg.EventDboId == id && !string.IsNullOrEmpty(reg.SponsorOf));
-
-      int numReg = 0;
-      int numSponsors = 0;
-      var forEachTask = _context.Registrations.ForEachAsync(reg => {
-        if (reg.EventDboId == id) {
-          numReg++;
-          if (!string.IsNullOrEmpty(reg.SponsorOf)) {
-            numSponsors++;
-          }
-        }
-      });
+      var loadingTask = _context.Entry(evtDbo).Collection(e => e.Registrations).LoadAsync();
 
       bool mutable = evtDbo.Deadline.HasValue ? evtDbo.Deadline > DateTime.Now.ToUniversalTime() : evtDbo.Start > DateTime.Now.ToUniversalTime();
       if (mutable) {
@@ -178,13 +165,12 @@ namespace opteamate {
         response.AddHref(HrefType.POST, $"api/events/{id}/registrations");
       }
 
-      //response.Data.NumRegistrations = await numRegCountTask;
-      //response.Data.HasSponsors = await sponsorsTask;
+      await loadingTask;
+      int numReg = evtDbo.Registrations.Count();
+      int numSponsors = evtDbo.Registrations.Count(r => !string.IsNullOrEmpty(r.SponsorOf));
 
-      await forEachTask;
       response.Data.NumRegistrations = numReg;
       response.Data.HasSponsors = numSponsors != 0;
-
 
       return Ok(response);
     }
@@ -193,14 +179,16 @@ namespace opteamate {
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetEvent(long id) {
+    public IActionResult GetEvent(long id) {
       // Not sure if async is makes a difference:
       // https://stackoverflow.com/questions/30042791/entity-framework-savechanges-vs-savechangesasync-and-find-vs-findasync
       // And have you ever seen how many threads are available in a typical ASP.Net server? It's like tens of thousands
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
 
-      await _context.Registrations.LoadAsync();
+      // https://stackoverflow.com/questions/31047247/query-with-loadasync-does-not-return-an-entity-although-it-should
+      _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
+
       var evtDto = CreateEventResponse(evtDbo);
       return Ok(evtDto);
     }
@@ -234,14 +222,14 @@ namespace opteamate {
 
     // POST: api/events/1/registrations
     [HttpPost("{id}/registrations")]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PostEventRegistration(long id, RegistrationData reg) {
 
-      var finding = _context.Events.FindAsync(id);
-      var loading = _context.Registrations.LoadAsync();
-
-      var evtDbo = await finding;
+      var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
-      await loading;
+
+      _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
 
       if (evtDbo.Registrations == null) { evtDbo.Registrations = new List<RegistrationDbo>(); }
       var regDbo = new RegistrationDbo();
@@ -256,18 +244,27 @@ namespace opteamate {
       return CreatedAtAction(nameof(GetEvent), new { evtDbo.EventDboId }, evtDto);
     }
 
-    // PUT: api/events/5
-    [HttpPut("{id}")]
-    public IActionResult PutEvent(long id, EventData evt) {
+    // PATCH: api/events/5
+    [HttpPatch("{id}")]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PatchEvent(long id, EventData evt) {
 
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
 
-      evtDbo.CopyFrom(evt);
+      _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
+
+      evtDbo.Start = evt.Start;
+      evtDbo.Title = evt.Title;
+      evtDbo.Location = evt.Location;
       _context.Entry(evtDbo).State = EntityState.Modified;
 
       try {
-        _context.SaveChanges();
+        var saving = _context.SaveChangesAsync();
+        var evtDto = CreateEventResponse(evtDbo);
+        await saving;
+        return Ok(evtDto);
       }
       catch (DbUpdateConcurrencyException) {
         if (!_context.Events.Any(e => e.EventDboId == id)) {
@@ -277,22 +274,30 @@ namespace opteamate {
           throw;
         }
       }
-      return NoContent();
     }
 
-    // PUT: api/events/5/registrations/1
-    [HttpPut("{id}/registration/{regid}")]
-    public IActionResult PutEventRegistration(long id, long regid, RegistrationData reg) {
+    // PATCH: api/events/5/registrations/1
+    [HttpPatch("{id}/registrations/{regid}")]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PatchEventRegistration(long id, long regid, RegistrationData reg) {
 
-      if (!_context.Events.Any(e => e.EventDboId == id)) { return NotFound(); }
+      var evtDbo = _context.Events.Find(id);
+      if (evtDbo == null) { return NotFound(); }
 
       var regDbo = _context.Registrations.Find(regid);
       if (regDbo == null) { return NotFound(); }
-      regDbo.CopyFrom(reg);
+      regDbo.Name = reg.Name;
+      regDbo.SponsorOf = reg.SponsorOf;
       _context.Entry(regDbo).State = EntityState.Modified;
 
+      _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
+
       try {
-        _context.SaveChanges();
+        var saving = _context.SaveChangesAsync();
+        var evtDto = CreateEventResponse(evtDbo);
+        await saving;
+        return Ok(evtDto);
       }
       catch (DbUpdateConcurrencyException) {
         if (!_context.Registrations.Any(e => e.RegistrationDboId == id)) {
@@ -301,9 +306,7 @@ namespace opteamate {
         else {
           throw;
         }
-      }
-
-      return NoContent();
+      }      
     }
 
     // DELETE: api/events/5
@@ -317,28 +320,28 @@ namespace opteamate {
 
       _context.Events.Remove(evtDbo);
 
-      _context.Registrations.Load();
+      _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
       if (evtDbo.Registrations != null) {
         _context.Registrations.RemoveRange(evtDbo.Registrations.ToArray());
       }
-      
+
       _context.SaveChanges();
       return NoContent();
     }
 
     // DELETE: api/events/5/registrations/4
     [HttpDelete("{id}/registrations/{regid}")]
-    public async Task<IActionResult> DeleteEventRegistration(long id, long regid) {
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
+    public IActionResult DeleteEventRegistration(long id, long regid) {
 
-      var findingEvt = _context.Events.FindAsync(id);
-      var findingReg = _context.Registrations.FindAsync(regid);
-
-      var regDbo = await findingReg;
-      if (regDbo == null) { return NotFound(); }
-      _context.Registrations.Remove(regDbo);
-
-      var evtDbo = await findingEvt;
+      var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
+
+      var regDbo = _context.Registrations.Find(regid);
+      if (regDbo == null) { return NotFound(); }
+
+      _context.Registrations.Remove(regDbo);
       evtDbo.Registrations.Remove(regDbo);
 
       _context.Update(evtDbo);

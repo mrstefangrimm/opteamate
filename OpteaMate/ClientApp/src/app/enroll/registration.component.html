@@ -3,7 +3,7 @@
 -->
 
 <table>
-  <thead>
+  <tbody>
     <tr>
       <td width="100%">
         <h1>Opteamate</h1>
@@ -13,22 +13,42 @@
       </td>
     </tr>
     <tr>
-      <td *ngIf="!backRoute" width="100%"><a [routerLink]="['/']">zur Startseite</a></td>
+      <td *ngIf="!backRoute" width="100%">        
+        <a [routerLink]="['/']"><i class="material-icons">home</i>zur Startseite</a>
+      </td>
       <td *ngIf="backRoute" width="100%"></td>
       <td *ngIf="backRoute" align="right"><a [routerLink]="['/'] + backRoute">Zur&uuml;ck zur Serie</a></td>
     </tr>
-  </thead>
+  </tbody>
 </table>
 
 <hr />
 
-<h2 *ngIf="currentEvent">{{currentEvent.data.title}}, {{currentEvent.data.location}}, {{eventStartTime | date :'dd.MM.yyyy H:mm'}}</h2>
+<table *ngIf="currentEvent">
+  <tbody>
+    <tr>
+      <td>
+        <h2>{{eventStartTime | date :'dd.MM.yyyy H:mm'}}</h2>
+      </td>
+      <td>
+        <h2>{{currentEvent.data.title}}, </h2>
+      </td>
+      <td>
+        <h2>{{currentEvent.data.location}}</h2>
+      </td>
+      <td>
+        <button mat-icon-button color="standard" (click)="editEvent(currentEvent.id)"><i class="material-icons">edit</i></button>
+      </td>     
+    </tr>
+  </tbody>
+</table>
+
 <h2>&Uuml;bersicht</h2>
 
 <table>
   <thead>
     <tr>
-      <th width="40" align="left">Position</th>
+      <th style="min-width: 100px" align="left">Position</th>
       <th width="15" align="center">Registriert</th>
       <th width="15" align="center">&Uuml;berz&auml;hlig</th>
       <th width="15" align="center">n&auml;chstes Optimum</th>
@@ -55,6 +75,7 @@
   <mat-form-field class="example-full-width">
     <mat-label>Name</mat-label>
     <input required
+           minlength ="3"
            matInput
            name="name"
            [(ngModel)]="newRegistration.name"
@@ -72,7 +93,11 @@
 
   <mat-form-field class="example-full-width">
     <mat-label>(offeriere)</mat-label>
-    <input matInput name="sponsorOf" [(ngModel)]="newRegistration.sponsorOf" type="text" class="form-control" />
+    <input matInput
+           name="sponsorOf"
+           [(ngModel)]="newRegistration.sponsorOf"
+           type="text"
+           class="form-control" />
   </mat-form-field>
 
   <button type="reset"
@@ -80,6 +105,7 @@
           mat-raised-button
           color="primary"
           (click)="addRegistration()">
+    <i class="material-icons">add</i>
     Bin dabei
   </button>
 
@@ -96,22 +122,23 @@
   </thead>
   <tbody *ngFor="let p of positions">
     <tr *ngFor="let reg of registrations.data | rosterfilter:p">
-      <td style="background-color: #abffab;">{{reg.data.name}}</td>
-      <td style="background-color: #abffab;">{{reg.data.position}}</td>
-      <td *ngIf="reg.data.sponsorOf" style="background-color:  #abffab;">{{reg.data.sponsorOf}}</td>
-      <td *ngIf="!reg.data.sponsorOf">{{reg.data.sponsorOf}}</td>
-      <td *ngIf="reg.hrefs.hasOwnProperty('delete')">
-        <button mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
+      <td style="background-color: #abffab;">{{reg.data.name}}</td>     
+      <td style="background-color: #abffab;">{{reg.data.position}}</td>   
+      <td *ngIf="reg.data.sponsorOf" style="background-color: #abffab;">{{reg.data.sponsorOf}}</td>
+      <td *ngIf="!reg.data.sponsorOf"></td>
+      <td>
+        <button mat-icon-button color="standard" (click)="editRegistration(reg.id)"><i class="material-icons">edit</i></button>
       </td>
     </tr>
+
     <tr *ngFor="let reg of registrations.data | scratchfilter:p">
       <td style="background-color: #ffafaf;">{{reg.data.name}}</td>
       <td style="background-color: #ffafaf;">{{reg.data.position}}</td>
       <td *ngIf="reg.data.sponsorOf" style="background-color: #ffafaf;">{{reg.data.sponsorOf}}</td>
-      <td *ngIf="!reg.data.sponsorOf">{{reg.data.sponsorOf}}</td>
-      <td *ngIf="reg.hrefs.hasOwnProperty('delete')">
-        <button mat-raised-button color="standard" (click)="deleteRegistration(reg.id)">L&ouml;schen</button>
-      </td>
+      <td *ngIf="!reg.data.sponsorOf"></td>
+      <td>
+        <button mat-icon-button color="standard" (click)="editRegistration(reg.id)"><i class="material-icons">edit</i></button>
+      </td>     
     </tr>
   </tbody>
 </table>
