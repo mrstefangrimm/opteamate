@@ -68,21 +68,6 @@ export class HomeComponent {
 
 }
 
-interface OptimumData {
-  name: string
-  strategies: string
-  positions: string
-}
-
-interface OptimumResponse {
-  id: number
-  data: OptimumData
-}
-
-interface OptimaResponse {
-  data: OptimumResponse[]
-}
-
 export class EventData {
   title: string
   location: string

@@ -9,7 +9,7 @@
         <h1>Opteamate</h1>
       </td>
       <td align="right" valign="top">
-        <button mat-raised-button color="standard" (click)="copyLinkToClipboard()">URL in die Zwischenablage</button>
+        <button mat-raised-button color="standard" (click)="copyLinkToClipboard()">Link in die Zwischenablage</button>
       </td>
     </tr>
     <tr>
@@ -48,16 +48,16 @@
         <td>{{getLocaleDt(ev.data.start) | date :'dd.MM.yyyy H:mm'}}</td>
         <td>{{ev.data.title}}</td>
         <td>{{ev.data.location}}</td>
-        <td *ngIf="ev.registrations.hrefs.hasOwnProperty('post')">
+        <td *ngIf="ev.registrations.hrefs.hasOwnProperty('post') && ev.hrefs.hasOwnProperty('patch')">
           <a [routerLink]="getLink(ev.data.eventToken)">Registrieren...</a>
         </td>
-        <td *ngIf="!ev.registrations.hrefs.hasOwnProperty('post')">
+        <td *ngIf="!ev.registrations.hrefs.hasOwnProperty('post') || !ev.hrefs.hasOwnProperty('patch')">
           <a [routerLink]="getLink(ev.data.eventToken)">Teilnahmen...</a>
         </td>
         <td align="center">{{ev.data.registrationsCount}}</td>
         <td *ngIf="ev.data.hasSponsors">Ja</td>
         <td *ngIf="!ev.data.hasSponsors">Nein</td>
-        <td>
+        <td *ngIf="ev.hrefs.hasOwnProperty('patch')">
           <button mat-icon-button color="standard" (click)="editEvent(ev.id)"><i class="material-icons">edit</i></button>
         </td>
       </tr>
@@ -87,7 +87,7 @@
   </ol>
 
   <p><u>Was musst du wissen?</u></p>
-  <blockquote>In der oberen, rechten Ecke hat es einen Knopf &acute;<i>URL in die Zwischenablage</i>&acute;. <b>Wichtig:</b> Die hinterlegte URL darfst du nicht verlieren.</blockquote>
+  <blockquote>In der oberen, rechten Ecke hat es einen Knopf &acute;<i>Link in die Zwischenablage</i>&acute;. <b>Wichtig:</b> Den hinterlegten Link darfst du nicht verlieren.</blockquote>
 
   <p><u>Warum Opteamate?</u></p>
   <ul>
@@ -97,9 +97,24 @@
     <li>Einmalige Funktionalit&auml;t</li>
   </ul>
 
+  <p><u>Beispiele</u></p>
+  <blockquote>
+    <a href="./enroll/9061fe41-2b52-416d-b9cb-4387d0719c77">Beispiel 1</a>
+    : Katharina organisiert einen Tanzabend. F&uuml;r einen gelungenen Abend soll die Anzahl der T&auml;nzerinnen und T&auml;nzer in etwa stimmen.
+    Wenn sich nicht mehr T&auml;nzer anmelden oder sich andere T&auml;nzerinnen abmelden, können Elisabelle und
+    Franziska leider nicht teilnehmen.
+  </blockquote>
+  <blockquote>
+    <a href="./enroll/fad017bc-5487-43ee-8e7d-62e13fceef65">Beispiel 2</a>
+    : Frauenabend. Christopher hat irgendwie Wind davon bekommen und m&ouml;chte auch dabei sein.
+    Sorry, du bist nicht erw&uuml;nscht.
+  </blockquote>
+
   <p><u>Wer steckt hinter Opteamate?</u></p>
-  <blockquote>Eine Einzelperson. Ich habe das Projekt als „Warm-Up“ gestartet, um mich mit Webtechnologien vertraut zu machen.</blockquote>
-  <blockquote>Der Programmcode ist Open Source und auf <a href="https://github.com/mrstefangrimm/opteamate">Github</a>.</blockquote>
-  <blockquote>F&uuml;r Webentwickler ist hier das <a href="./swagger">API</a>.</blockquote>
+  <blockquote>
+    Eine Einzelperson. Ich habe das Projekt als „Warm-Up“ gestartet, um mich mit Webtechnologien vertraut zu machen.
+    Der Programmcode ist Open Source und auf <a href="https://github.com/mrstefangrimm/opteamate">Github</a>.
+    F&uuml;r Webentwickler ist hier das <a href="./swagger">API</a>.
+  </blockquote>
 
 </section>

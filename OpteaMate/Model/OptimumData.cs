@@ -9,5 +9,7 @@ namespace opteamate {
     [Required] public string Name { get; set; }
     [Required] public string Strategies { get; set; }
     [Required] public string Positions { get; set; }
+    public string OverrepresentationMatrix { get; set; }
+    public string Maximum { get; set; }
   }
 }

@@ -167,7 +167,7 @@ namespace opteamate {
 
       await loadingTask;
       int numReg = evtDbo.Registrations.Count();
-      int numSponsors = evtDbo.Registrations.Count(r => !string.IsNullOrEmpty(r.SponsorOf));
+      int numSponsors = evtDbo.Registrations.Count(r => !string.IsNullOrEmpty(r.Offers));
 
       response.Data.NumRegistrations = numReg;
       response.Data.HasSponsors = numSponsors != 0;
@@ -288,7 +288,7 @@ namespace opteamate {
       var regDbo = _context.Registrations.Find(regid);
       if (regDbo == null) { return NotFound(); }
       regDbo.Name = reg.Name;
-      regDbo.SponsorOf = reg.SponsorOf;
+      regDbo.Offers = reg.Offers;
       _context.Entry(regDbo).State = EntityState.Modified;
 
       _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
@@ -359,10 +359,11 @@ namespace opteamate {
 
       response.Data.CopyFrom(dbo);
       
-      bool mutable = dbo.Deadline.HasValue ? dbo.Deadline > DateTime.Now.ToUniversalTime() : dbo.Start > DateTime.Now.ToUniversalTime();
+      bool canAddRegistrations = dbo.Deadline.HasValue ? dbo.Deadline > DateTime.Now.ToUniversalTime() : dbo.Start > DateTime.Now.ToUniversalTime();
+      bool canPatchEvent = dbo.Locked == false;
       if (dbo.Registrations != null) {
         foreach (var regDbo in dbo.Registrations) {
-          response.Registrations.Data.Add(CreateRegistrationResponse(regDbo, mutable));
+          response.Registrations.Data.Add(CreateRegistrationResponse(regDbo, canAddRegistrations, canPatchEvent));
         }
       }
 
@@ -373,18 +374,25 @@ namespace opteamate {
       // DeleteEvent; also possible to delete past events
       response.AddHref(HrefType.DELETE, $"api/events/{dbo.EventDboId}");
 
-      if (mutable) {
+      if (canAddRegistrations) {
         // PostEventRegistration
         response.Registrations.AddHref(HrefType.POST, $"api/events/{dbo.EventDboId}/registrations");
+      }
+      if (canPatchEvent) {
+        // PatchEvent
+        response.AddHref(HrefType.PATCH, $"api/events/{dbo.EventDboId}");
       }
       return response;
     }
 
-    private RegistrationResponse CreateRegistrationResponse(RegistrationDbo dbo, bool mutable) {
+    private RegistrationResponse CreateRegistrationResponse(RegistrationDbo dbo, bool canAddRegistrations, bool canPatchEvent) {
       var response = new RegistrationResponse { Id = dbo.RegistrationDboId, Data = new RegistrationData() };
       response.Data.CopyFrom(dbo);
-      if (mutable) {
+      if (canAddRegistrations) {
         response.AddHref(HrefType.DELETE, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
+      }
+      if (canPatchEvent) {
+        response.AddHref(HrefType.PATCH, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
       }
       return response;
     }

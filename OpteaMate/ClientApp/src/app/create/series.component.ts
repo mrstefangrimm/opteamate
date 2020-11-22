@@ -179,21 +179,6 @@ export class SeriesComponent {
 
 }
 
-interface OptimumData {
-  name: string
-  strategies: string
-  positions: string
-}
-
-interface OptimumResponse {
-  id: number
-  data: OptimumData
-}
-
-interface OptimaResponse {
-  data: OptimumResponse[]
-}
-
 interface RegistrationsResponse {
   hrefs: { [key: string]: string; };
 }

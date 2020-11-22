@@ -29,6 +29,9 @@ export class RegistrationComponent {
   positions: string[]
   eventUrl: string
   backRoute: string
+  hasOverrepresentation: boolean
+  hasMaximum: boolean
+  lockedEvent: boolean
 
   constructor(
     private route: ActivatedRoute,
@@ -93,7 +96,7 @@ export class RegistrationComponent {
       dialogConfig.data = {
         canDelete: true,
         registrationName: reg.data.name,
-        registrationOffers: reg.data.sponsorOf
+        registrationOffers: reg.data.offers
       }
 
       const dialogRef = this.dialog.open(RegistrationEditComponent, dialogConfig)
@@ -110,7 +113,7 @@ export class RegistrationComponent {
             }
             else {
               reg.data.name = data.data.registrationName
-              reg.data.sponsorOf = data.data.registrationOffers
+              reg.data.offers = data.data.registrationOffers
               console.info(reg.data)
 
               let request = this.eventsUri + this.eventId + "/registrations/" + regId
@@ -170,6 +173,8 @@ export class RegistrationComponent {
         console.log(result)
         this.currentEvent = result
         this.backRoute = this.currentEvent.hrefs['back']
+        this.lockedEvent = !this.currentEvent.hrefs.hasOwnProperty('patch')
+        console.info(this.lockedEvent)
 
         // utc-to-local time
         let dt = new Date(result.data.start)
@@ -219,6 +224,8 @@ export class RegistrationComponent {
     this.http.get<OptimumResponse>(request)
       .subscribe(result => {
         console.log(result)
+        this.hasOverrepresentation = result.data.overrepresentationMatrix != null
+        this.hasMaximum = result.data.maximum != null
         let posStr = result.data.positions
         this.positions = posStr.split(';')
         this.fillStats(result)
@@ -282,6 +289,64 @@ export class RegistrationComponent {
 
       if (!continueCondition) {
 
+        // Check for overrepresentation
+        if (result.data.overrepresentationMatrix) {
+          let overrepStr = result.data.overrepresentationMatrix
+          let overrepRows = overrepStr.split(';')
+
+          var overrepMat: Array<Float32Array> = new Array<Float32Array>();
+          for (let n = 0; n < this.positions.length; n++) {
+            let overrepCols = overrepRows[n].split(',')
+            let fa = new Float32Array(3)
+            for (let m = 0; m < this.positions.length; m++) {
+              fa[m] = +overrepCols[m];
+            }
+            overrepMat.push(fa)
+          }
+          console.log(overrepMat)
+
+          var overrepVec: Float32Array = new Float32Array(this.positions.length)
+          for (let n = 0; n < this.positions.length; n++) {
+            overrepVec[n] = 0
+            for (let m = 0; m < this.positions.length; m++) {
+              let statData = this.stats.theOptima[this.positions[m]]
+              overrepVec[n] += statData.registrations * overrepMat[n][m]
+            }
+          }
+          console.log(overrepVec)
+          for (let n = 0; n < this.positions.length; n++) {
+            let statData = this.stats.theOptima[this.positions[n]]
+            if (overrepVec[n] > 0) {
+              // Correction
+              if (optimaStrs[n] == '*') {
+                statData.nextOptimum -= 1
+              }
+              statData.remaining = statData.overrepresentation = Math.ceil(overrepVec[n])
+            }
+            else {
+              statData.overrepresentation = 0
+            }
+          }
+        }
+
+        // Check for max. number of participants
+        if (result.data.maximum) {
+          let maximumStr = result.data.maximum
+          console.log(maximumStr)
+          let maximumPerPos = maximumStr.split('-')
+          for (let n = 0; n < this.positions.length; n++) {
+            let statData = this.stats.theOptima[this.positions[n]]
+            statData.maximum = +maximumPerPos[n]
+            // Correction
+            statData.nextOptimum = Math.min(statData.nextOptimum, statData.maximum)
+            // Check maximum if remaining is 0, i.e. the other rules did not apply
+            if (statData.remaining == 0 && statData.registrations - statData.maximum > 0) {
+              statData.remaining = statData.registrations - statData.maximum
+            }
+          }
+        }
+
+        // Check for a minimal number of registrations
         var someMissing = false
         this.positions.forEach(pos => {
           let statData = this.stats.theOptima[pos]
@@ -294,6 +359,7 @@ export class RegistrationComponent {
           this.registrations.data.forEach(reg => reg.data.transientScratch = true)
         }
         else {
+          // Set scratch based on creation time
           this.positions.forEach(pos => {
             let statData = this.stats.theOptima[pos]
             if (statData.remaining > 0 && this.registrations != null) {
@@ -318,6 +384,8 @@ class OptimumStatData {
   registrations: number
   missing: number
   remaining: number
+  overrepresentation: number
+  maximum: number
 }
 
 class StatisticData {
@@ -330,6 +398,8 @@ interface OptimumData {
   name: string
   strategies: string
   positions: string
+  overrepresentationMatrix: string
+  maximum: string
 }
 
 interface OptimumResponse {
@@ -339,7 +409,7 @@ interface OptimumResponse {
 export class RegistrationData {
   name: string
   position: string
-  sponsorOf: string
+  offers: string
   creationTime: Date
   transientScratch: boolean
 }

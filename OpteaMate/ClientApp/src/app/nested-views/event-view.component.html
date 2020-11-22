@@ -16,7 +16,9 @@
   </div>
   <blockquote *ngIf="selectedOptimum">
     <mat-label>Positionen: {{selectedOptimum.data.positions}}</mat-label><br />
-    <mat-label>Optima: {{selectedOptimum.data.strategies}}</mat-label>
+    <mat-label>Optima: {{selectedOptimum.data.strategies}}</mat-label><br />
+    <mat-label *ngIf="selectedOptimum.data.overrepresentationMatrix">&Uuml;berrepresentation: [{{selectedOptimum.data.overrepresentationMatrix}}]</mat-label><br *ngIf="selectedOptimum.data.overrepresentationMatrix" />
+    <mat-label *ngIf="selectedOptimum.data.maximum">Maximum: {{selectedOptimum.data.maximum}} </mat-label>
   </blockquote>
 
   <div>

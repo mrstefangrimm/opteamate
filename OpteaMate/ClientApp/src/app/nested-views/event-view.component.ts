@@ -110,6 +110,8 @@ interface OptimumData {
   name: string
   strategies: string
   positions: string
+  overrepresentationMatrix: string
+  maximum: string
 }
 
 interface OptimumResponse {

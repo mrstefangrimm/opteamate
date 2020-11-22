@@ -9,6 +9,6 @@ namespace opteamate {
     [Required] public string Name { get; set; }
     [Required] public string Position { get; set; }
     [Required] public DateTime CreationTime { get; set; }
-    public string SponsorOf { get; set; }
+    public string Offers { get; set; }
   }
 }

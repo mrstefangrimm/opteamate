@@ -9,7 +9,7 @@
         <h1>Opteamate</h1>
       </td>
       <td align="right" valign="top">
-        <button mat-raised-button color="standard" (click)="copyLinkToClipboard()">URL in die Zwischenablage</button>
+        <button mat-raised-button color="standard" (click)="copyLinkToClipboard()">Link in die Zwischenablage</button>
       </td>
     </tr>
     <tr>
@@ -36,7 +36,7 @@
       <td>
         <h2>{{currentEvent.data.location}}</h2>
       </td>
-      <td>
+      <td *ngIf="!lockedEvent">
         <button mat-icon-button color="standard" (click)="editEvent(currentEvent.id)"><i class="material-icons">edit</i></button>
       </td>     
     </tr>
@@ -53,6 +53,8 @@
       <th width="15" align="center">&Uuml;berz&auml;hlig</th>
       <th width="15" align="center">n&auml;chstes Optimum</th>
       <th width="15" align="center">Fehlend</th>
+      <th width="15" align="center" *ngIf="hasOverrepresentation">&Uuml;ber representiert</th>
+      <th width="15" align="center" *ngIf="hasMaximum">Max. Anz. Teilnehmer</th>
     </tr>
   </thead>
   <tbody>
@@ -62,6 +64,8 @@
       <td align="center">{{i.value.remaining}}</td>
       <td align="center">{{i.value.nextOptimum}}</td>
       <td align="center">{{i.value.missing}}</td>
+      <td align="center" *ngIf="hasOverrepresentation">{{i.value.overrepresentation}}</td>
+      <td align="center" *ngIf="hasMaximum">{{i.value.maximum}}</td>
     </tr>
   </tbody>
 </table>
@@ -70,7 +74,7 @@
 
 <h2>Teilnehmer</h2>
 
-<form *ngIf="registrations && registrations.hrefs.hasOwnProperty('post')">
+<form *ngIf="!lockedEvent && registrations && registrations.hrefs.hasOwnProperty('post')">
 
   <mat-form-field class="example-full-width">
     <mat-label>Name</mat-label>
@@ -94,8 +98,8 @@
   <mat-form-field class="example-full-width">
     <mat-label>(offeriere)</mat-label>
     <input matInput
-           name="sponsorOf"
-           [(ngModel)]="newRegistration.sponsorOf"
+           name="offers"
+           [(ngModel)]="newRegistration.offers"
            type="text"
            class="form-control" />
   </mat-form-field>
@@ -124,9 +128,9 @@
     <tr *ngFor="let reg of registrations.data | rosterfilter:p">
       <td style="background-color: #abffab;">{{reg.data.name}}</td>     
       <td style="background-color: #abffab;">{{reg.data.position}}</td>   
-      <td *ngIf="reg.data.sponsorOf" style="background-color: #abffab;">{{reg.data.sponsorOf}}</td>
-      <td *ngIf="!reg.data.sponsorOf"></td>
-      <td>
+      <td *ngIf="reg.data.offers" style="background-color: #abffab;">{{reg.data.offers}}</td>
+      <td *ngIf="!reg.data.offers"></td>
+      <td *ngIf="reg.hrefs.hasOwnProperty('patch')">
         <button mat-icon-button color="standard" (click)="editRegistration(reg.id)"><i class="material-icons">edit</i></button>
       </td>
     </tr>
@@ -134,9 +138,9 @@
     <tr *ngFor="let reg of registrations.data | scratchfilter:p">
       <td style="background-color: #ffafaf;">{{reg.data.name}}</td>
       <td style="background-color: #ffafaf;">{{reg.data.position}}</td>
-      <td *ngIf="reg.data.sponsorOf" style="background-color: #ffafaf;">{{reg.data.sponsorOf}}</td>
-      <td *ngIf="!reg.data.sponsorOf"></td>
-      <td>
+      <td *ngIf="reg.data.offers" style="background-color: #ffafaf;">{{reg.data.offers}}</td>
+      <td *ngIf="!reg.data.offers"></td>
+      <td *ngIf="reg.hrefs.hasOwnProperty('patch')">
         <button mat-icon-button color="standard" (click)="editRegistration(reg.id)"><i class="material-icons">edit</i></button>
       </td>     
     </tr>
