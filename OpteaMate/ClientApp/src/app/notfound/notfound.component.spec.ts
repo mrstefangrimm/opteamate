@@ -1,6 +1,5 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { NotfoundComponent } from './notfound.component';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing'
+import { NotfoundComponent } from './notfound.component'
 
 describe('NotfoundComponent', () => {
   let component: NotfoundComponent;
@@ -22,4 +21,9 @@ describe('NotfoundComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+   it('should display a title', async(() => {
+    const titleText = fixture.nativeElement.querySelector('p').textContent;
+    expect(titleText).toEqual('notfound works!');
+  }));
 });

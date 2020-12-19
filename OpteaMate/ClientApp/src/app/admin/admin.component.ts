@@ -1,9 +1,8 @@
 // Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
-import { Component, Inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { Component, Inject } from '@angular/core'
+import { HttpClient } from '@angular/common/http'
 
 @Component({
   selector: 'app-admin-component',

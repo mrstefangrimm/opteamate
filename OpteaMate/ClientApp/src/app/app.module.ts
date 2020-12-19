@@ -7,39 +7,31 @@ import { FormsModule } from '@angular/forms'
 import { HttpClientModule } from '@angular/common/http'
 import { RouterModule } from '@angular/router'
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations'
-import { MatNativeDateModule } from '@angular/material/core'
-import { MatSliderModule } from '@angular/material/slider'
+
 import { MatInputModule } from '@angular/material/input'
+import { MatNativeDateModule } from '@angular/material/core'
 import { MatDatepickerModule } from '@angular/material/datepicker'
 import { MatSelectModule } from '@angular/material/select'
 import { MatButtonModule } from '@angular/material/button'
 import { MatDialogModule } from '@angular/material/dialog'
 
+
+import { SharedModule } from './shared/shared.module'
+import { CreateModule } from './create/create.module'
+import { EnrollModule } from './enroll/enroll.module'
+
 import { AppComponent } from './app.component'
+import { AdminComponent } from './admin/admin.component'
+import { NotfoundComponent } from './notfound/notfound.component';
 import { HomeComponent } from './create/home.component'
 import { SeriesComponent } from './create/series.component'
-import { AdminComponent } from './admin/admin.component'
 import { RegistrationComponent } from './enroll/registration.component'
-import { RegistrationRosterPipe } from './enroll/registration-position-pipe'
-import { RegistrationScratchPipe } from './enroll/registration-position-pipe';
-import { NotfoundComponent } from './notfound/notfound.component';
-import { EventEditComponent } from './nested-views/event-edit.component'
-import { EventViewComponent } from './nested-views/event-view.component'
-import { RegistrationEditComponent } from './nested-views/registration-edit.component'
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
-    SeriesComponent,
     AdminComponent,
-    RegistrationComponent,
-    RegistrationRosterPipe,
-    RegistrationScratchPipe,
-    NotfoundComponent,
-    EventEditComponent,
-    EventViewComponent,
-    RegistrationEditComponent
+    NotfoundComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -54,13 +46,15 @@ import { RegistrationEditComponent } from './nested-views/registration-edit.comp
       { path: '**', redirectTo: '/404' }
     ]),
     BrowserAnimationsModule,
-    MatSliderModule,
     MatInputModule,
     MatDatepickerModule,
     MatNativeDateModule,
     MatSelectModule,
     MatButtonModule,
-    MatDialogModule
+    MatDialogModule,
+    SharedModule,
+    CreateModule,
+    EnrollModule
   ],
   providers: [],
   bootstrap: [AppComponent]

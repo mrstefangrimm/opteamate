@@ -331,7 +331,7 @@ namespace opteamate {
 
     // DELETE: api/events/5/registrations/4
     [HttpDelete("{id}/registrations/{regid}")]
-    [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
     public IActionResult DeleteEventRegistration(long id, long regid) {
 
@@ -342,12 +342,11 @@ namespace opteamate {
       if (regDbo == null) { return NotFound(); }
 
       _context.Registrations.Remove(regDbo);
-      evtDbo.Registrations.Remove(regDbo);
-
-      _context.Update(evtDbo);
-
       _context.SaveChanges();
-      return NoContent();
+
+      _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
+      var evtDto = CreateEventResponse(evtDbo);
+      return Ok(evtDto);
     }
 
     private EventResponse CreateEventResponse(EventDbo dbo) {
@@ -388,12 +387,11 @@ namespace opteamate {
     private RegistrationResponse CreateRegistrationResponse(RegistrationDbo dbo, bool canAddRegistrations, bool canPatchEvent) {
       var response = new RegistrationResponse { Id = dbo.RegistrationDboId, Data = new RegistrationData() };
       response.Data.CopyFrom(dbo);
-      if (canAddRegistrations) {
+      // registrations from an event in the past nor from a locked event can be deleted or patched.
+      if (canAddRegistrations && canPatchEvent) {
         response.AddHref(HrefType.DELETE, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
-      }
-      if (canPatchEvent) {
         response.AddHref(HrefType.PATCH, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
-      }
+      }      
       return response;
     }
 

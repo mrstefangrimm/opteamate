@@ -1,9 +1,10 @@
 // Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
-import { Component, OnInit, Input, Output, EventEmitter, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { DateAdapter } from '@angular/material/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core'
+import { DateAdapter } from '@angular/material/core'
+import { IOptimum, Optimum } from '../../shared/models/optima.model'
+import { OptimaSerivce } from '../../shared/services/optima.service'
 
 @Component({
   selector: 'event-view',
@@ -15,43 +16,40 @@ export class EventViewComponent implements OnInit {
   @Input() config: EventViewComponentInput
   @Output() notify: EventEmitter<EventViewComponentOutput> = new EventEmitter<EventViewComponentOutput>();
 
-  optimaUri: string
-  optima: OptimumResponse[]
+  optima: IOptimum[]
   newEventTitle: string
   newEventLocation: string
 
-  selectedOptimum: OptimumResponse
+  selectedOptimum: IOptimum
   selectedDate: Date
   selectedHour: number
   selectedMinutes: number
   nextSeriesToken: string
 
   constructor(
-    private readonly http: HttpClient,
     private dateAdapter: DateAdapter<Date>,
-    @Inject('BASE_URL') private readonly baseUrl: string) {
+    private optimaService: OptimaSerivce) {
   }
 
   ngOnInit() {
     this.dateAdapter.setLocale('de')
 
-    let tocRequest = this.baseUrl + 'api/toc'
-    this.http.get<TocResponse>(tocRequest)
+    this.optimaService.getOptima()
       .subscribe(result => {
         console.log(result)
-        this.optimaUri = result.hrefs['optima']
-        console.log(this.optimaUri)
-
-        this.http.get<OptimaResponse>(this.optimaUri)
-          .subscribe(result => {
-            console.log(result)
-            this.optima = result.data
-            this.selectedOptimum = this.optima[0]
-          }, error => console.error(error))
-
-        this.setInitialDateTime()
-
+        this.optima = result.data.map(o => {
+          // TODO: Factory
+          let opt = {
+            id: o.id,
+            data: o.data,
+            roles: []
+          }
+          return new Optimum(opt)
+        })
+        this.selectedOptimum = this.optima[0]
       }, error => console.error(error))
+
+    this.setInitialDateTime()
   }
 
   addEvent() {
@@ -101,25 +99,3 @@ export class EventViewComponentOutput {
   start: Date
   optimumId: number
 }
-
-interface TocResponse {
-  hrefs: { [key: string]: string; };
-}
-
-interface OptimumData {
-  name: string
-  strategies: string
-  positions: string
-  overrepresentationMatrix: string
-  maximum: string
-}
-
-interface OptimumResponse {
-  id: number
-  data: OptimumData
-}
-
-interface OptimaResponse {
-  data: OptimumResponse[]
-}
-

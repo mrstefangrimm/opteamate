@@ -54,9 +54,9 @@
         <td *ngIf="!ev.registrations.hrefs.hasOwnProperty('post') || !ev.hrefs.hasOwnProperty('patch')">
           <a [routerLink]="getLink(ev.data.eventToken)">Teilnahmen...</a>
         </td>
-        <td align="center">{{ev.data.registrationsCount}}</td>
-        <td *ngIf="ev.data.hasSponsors">Ja</td>
-        <td *ngIf="!ev.data.hasSponsors">Nein</td>
+        <td align="center">{{ev.stats.registrationsCount}}</td>
+        <td *ngIf="ev.stats.hasSponsors">Ja</td>
+        <td *ngIf="!ev.stats.hasSponsors">Nein</td>
         <td *ngIf="ev.hrefs.hasOwnProperty('patch')">
           <button mat-icon-button color="standard" (click)="editEvent(ev.id)"><i class="material-icons">edit</i></button>
         </td>

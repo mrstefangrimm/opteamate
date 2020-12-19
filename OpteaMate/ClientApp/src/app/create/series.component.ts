@@ -3,11 +3,13 @@
 //
 import { Component, Inject  } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { HttpClient } from '@angular/common/http'
 import { DateAdapter } from '@angular/material/core'
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog'
-import { EventEditComponent } from '../nested-views/event-edit.component'
-import { EventViewComponentInput, EventViewComponentOutput } from '../nested-views/event-view.component'
+import { EventViewComponentInput, EventViewComponentOutput } from './shared/event-view.component'
+import { EventEditComponent } from '../shared/components/event-edit.component'
+import { EventData, IEvent } from '../shared/models/events.model'
+import { IRegistrations, IRegistrationsInfo } from '../shared/models/registrations.model'
+import { EventResponse, EventsSerivce } from '../shared/services/events.service'
 
 @Component({
   selector: 'app-home',
@@ -16,48 +18,37 @@ import { EventViewComponentInput, EventViewComponentOutput } from '../nested-vie
 
 export class SeriesComponent {
 
-  eventsUri: string
-  optimaUri: string
   seriesToken: string
 
-  events: EventResponse[]
+  events: SeriesEvent[]
 
   postPermission: boolean
   eventViewInput: EventViewComponentInput = new EventViewComponentInput()
 
-
-  constructor(private route: ActivatedRoute,
-    private readonly http: HttpClient,
+  constructor(
+    private route: ActivatedRoute,
     private dateAdapter: DateAdapter<Date>,
     private dialog: MatDialog,
+    private readonly eventsService: EventsSerivce,
     @Inject('BASE_URL') private readonly baseUrl: string) {
 
     this.dateAdapter.setLocale('de');
 
     this.eventViewInput.title = 'Anlass Hinzufügen'
-    this.eventViewInput.buttonText = 'Hinzufügen'
+    this.eventViewInput.buttonText = 'Hinzufügen'   
+  }
 
-    let tocRequest = this.baseUrl + 'api/toc'
-    this.http.get<TocResponse>(tocRequest)
-      .subscribe(result => {
-        console.log(result)
-        this.eventsUri = result.hrefs['events']
-        this.optimaUri = result.hrefs['optima']
-        console.log(this.eventsUri)
-        console.log(this.optimaUri)
+  ngOnInit() {
+    this.eventsService.getInfo().subscribe(
+      result => {
+        console.info(result)
+        this.postPermission = result.hrefs.hasOwnProperty('post')
+      }, error => { console.error(error) })
 
-        this.route.params.subscribe(params => {
-          this.seriesToken = params.seriestoken
-          this.getEventsBySeriesToken()
-        })      
-
-        this.http.get<EventsInfoResponse>(this.eventsUri + 'info')
-          .subscribe(result => {
-            console.log(result)
-            this.postPermission = result.hrefs.hasOwnProperty('post')
-          }, error => console.error(error))
-
-      }, error => console.error(error))
+    this.route.params.subscribe(params => {
+      this.seriesToken = params.seriestoken
+      this.getEventsBySeriesToken()
+    })
   }
 
   getLink(eventToken: string) {
@@ -72,7 +63,6 @@ export class SeriesComponent {
   }
 
   editEvent(evtId: number) {
-
     this.events.forEach(evt => {
       if (evt.id == evtId) {
         const dialogConfig = new MatDialogConfig()
@@ -98,9 +88,11 @@ export class SeriesComponent {
             if (data != null && data.data != null) {
               console.info(data.data)
               if (data.data.deleteEvent == true) {
-                let request = this.eventsUri + evtId                
-                this.http.delete(request)
-                  .subscribe(result => {
+
+                this.eventsService.deleteEvent(evtId).subscribe(
+                  result => {
+                    console.info(result)
+                    // result is of type 'NoContent' - reload is required.
                     this.getEventsBySeriesToken()
                   }, error => console.error(error))
               }
@@ -113,12 +105,11 @@ export class SeriesComponent {
                 console.info(data.data.eventStartTime)
                 console.info(data.data.eventTitle)
                 console.info(data.data.eventLocation)
-
                 console.info(evt)
-                let request = this.eventsUri + evtId
-                this.http.patch<EventData>(request, evt)
-                  .subscribe(result => {
-                    this.getEventsBySeriesToken()
+
+                this.eventsService.patchEvent(evtId, evt).subscribe(
+                  result => {
+                    this.updateEventData(result)
                   }, error => console.error(error))
               }
             }
@@ -136,30 +127,52 @@ export class SeriesComponent {
     newEvent.start = args.start
     newEvent.seriesToken = this.seriesToken
 
-    this.http.post<EventResponse>(this.eventsUri, newEvent).
-      subscribe(result => {
+    this.eventsService.postEvent(newEvent).subscribe(
+      result => {
+        // other events can be added in the meanwhile - reload is required.
         this.getEventsBySeriesToken()
       }, error => console.error(error))
   }
 
+  updateEvents(events: EventResponse[]) {
+    if (events != null) {
+      this.events = events.map(x => new SeriesEvent(x, new SeriesEventStats()))
+      if (this.events != null) {
+        this.events.forEach(
+          e => {
+            this.eventsService.getRegistrationsInfo(e.id).subscribe(
+              result => {
+                console.info(result)
+                e.fillStats(result)
+              }, error => console.error(error))
+          })
+      }
+    }
+    else {
+      this.events = SeriesEvent[0]
+    }   
+  }
+
+  updateEventData(other: EventResponse) {
+    if (this.events != null) {
+      var evt = this.events.find(x => x.id == other.id)
+      if (evt != null) {
+        evt.data = other.data
+      }
+      else {
+        console.error('update event but not found.')
+      }
+    }
+    else {
+      console.error('update event on null.')
+    }
+  }
+
   getEventsBySeriesToken() {
-    let request = this.eventsUri + 'byseries?token=' + this.seriesToken
-    this.http.get<EventsResponse>(request)
-      .subscribe(result => {
-        console.log(result)
-        this.events = result.data
-        if (this.events != null) {
-          this.events.forEach(
-            e => {
-              let infoRequest = this.eventsUri + e.id + '/registrations/info'
-              this.http.get<RegistrationsInfoResponse>(infoRequest)
-                .subscribe(result => {
-                  console.log(result)
-                  e.data.registrationsCount = result.data.numRegistrations
-                  e.data.hasSponsors = result.data.hasSponsors
-                }, error => console.error(error))
-            })
-        }
+    this.eventsService.getEventSeries(this.seriesToken).subscribe(
+      result => {
+        console.info(result)
+        this.updateEvents(result.data)
       }, error => console.error(error))
   }
 
@@ -179,47 +192,30 @@ export class SeriesComponent {
 
 }
 
-interface RegistrationsResponse {
-  hrefs: { [key: string]: string; };
-}
-
-export class EventData {
-  eventToken: string
-  title: string
-  location: string
-  start: Date
-  optimumId: number
-  seriesToken: string
-
+class SeriesEventStats {
   registrationsCount: number
   hasSponsors: boolean
 }
 
-interface EventResponse {
+class SeriesEvent implements IEvent {
+
   id: number
   data: EventData
-  registrations: RegistrationsResponse
-  hrefs: { [key: string]: string; };
-}
-
-interface EventsResponse {
-  data: EventResponse[]
   hrefs: { [key: string]: string }
-}
+  registrations: IRegistrations
 
-interface EventsInfoResponse {
-  hrefs: { [key: string]: string; };
-}
+  constructor(other: IEvent, readonly stats: SeriesEventStats) {
+    if (other == null) throw new Error('other')
+    if (stats == null) throw new Error('stats')
 
-interface RegistrationsInfoData {
-  numRegistrations: number
-  hasSponsors: boolean
-}
+    this.id = other.id
+    this.data = other.data
+    this.hrefs = other.hrefs
+    this.registrations = other.registrations
+  }
 
-interface RegistrationsInfoResponse {
-  data: RegistrationsInfoData
-}
-
-interface TocResponse {
-  hrefs: { [key: string]: string; };
+  fillStats(info: IRegistrationsInfo) {
+    this.stats.registrationsCount = info.data.numRegistrations
+    this.stats.hasSponsors = info.data.hasSponsors
+  }
 }

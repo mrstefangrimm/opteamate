@@ -13,7 +13,7 @@
       </td>
     </tr>
     <tr>
-      <td *ngIf="!backRoute" width="100%">        
+      <td *ngIf="!backRoute" width="100%">
         <a [routerLink]="['/']"><i class="material-icons">home</i>zur Startseite</a>
       </td>
       <td *ngIf="backRoute" width="100%"></td>
@@ -38,27 +38,27 @@
       </td>
       <td *ngIf="!lockedEvent">
         <button mat-icon-button color="standard" (click)="editEvent(currentEvent.id)"><i class="material-icons">edit</i></button>
-      </td>     
+      </td>
     </tr>
   </tbody>
 </table>
 
 <h2>&Uuml;bersicht</h2>
 
-<table>
+<table *ngIf="currentEvent">
   <thead>
     <tr>
-      <th style="min-width: 100px" align="left">Position</th>
-      <th width="15" align="center">Registriert</th>
-      <th width="15" align="center">&Uuml;berz&auml;hlig</th>
-      <th width="15" align="center">n&auml;chstes Optimum</th>
-      <th width="15" align="center">Fehlend</th>
-      <th width="15" align="center" *ngIf="hasOverrepresentation">&Uuml;ber representiert</th>
-      <th width="15" align="center" *ngIf="hasMaximum">Max. Anz. Teilnehmer</th>
+      <th style="min-width: 10vw; max-width: 15em" align="left">Rolle</th>
+      <th width="10" align="center">Registriert</th>
+      <th width="10" align="center">&Uuml;berz&auml;hlig</th>
+      <th width="10" align="center">n&auml;chstes Optimum</th>
+      <th width="10" align="center">Fehlend</th>
+      <th width="10" align="center" *ngIf="hasOverrepresentation">&Uuml;ber representiert</th>
+      <th width="10" align="center" *ngIf="hasMaximum">Max. Anz. Teilnehmer</th>
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let i of stats.theOptima | keyvalue">
+    <tr *ngFor="let i of currentEvent.stats.theOptima | keyvalue">
       <td align="left">{{i.key}}</td>
       <td align="center">{{i.value.registrations}}</td>
       <td align="center">{{i.value.remaining}}</td>
@@ -70,16 +70,27 @@
   </tbody>
 </table>
 
+<table *ngIf="currentEvent && currentEvent.allOfferings().length > 0">
+  <thead>
+    <tr>
+      <th align="left">Mitgebrachtes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>{{currentEvent.allOfferings()}}</tr>
+  </tbody>
+</table>
+
 <hr />
 
 <h2>Teilnehmer</h2>
 
-<form *ngIf="!lockedEvent && registrations && registrations.hrefs.hasOwnProperty('post')">
+<form *ngIf="!lockedEvent && currentEvent && currentEvent.registrations && currentEvent.registrations.hrefs.hasOwnProperty('post')">
 
   <mat-form-field class="example-full-width">
     <mat-label>Name</mat-label>
     <input required
-           minlength ="3"
+           minlength="3"
            matInput
            name="name"
            [(ngModel)]="newRegistration.name"
@@ -88,10 +99,10 @@
     <mat-error>Name, mindestens 3 Zeichen</mat-error>
   </mat-form-field>
 
-  <mat-form-field>
-    <mat-label>Position</mat-label>
-    <mat-select required [(value)]="newRegistration.position">
-      <mat-option *ngFor="let p of positions" [value]="p">{{p}}</mat-option>
+  <mat-form-field *ngIf="currentOptimum">
+    <mat-label>Rolle</mat-label>
+    <mat-select required [(value)]="newRegistration.role">
+      <mat-option *ngFor="let p of currentOptimum.roles" [value]="p">{{p}}</mat-option>
     </mat-select>
   </mat-form-field>
 
@@ -105,7 +116,7 @@
   </mat-form-field>
 
   <button type="reset"
-          [disabled]="newRegistration.name == null || newRegistration.name.length < 3 || newRegistration.position == null"
+          [disabled]="newRegistration.name == null || newRegistration.name.length < 3 || newRegistration.role == null"
           mat-raised-button
           color="primary"
           (click)="addRegistration()">
@@ -115,34 +126,40 @@
 
 </form>
 
-<table *ngIf="stats.TotNumRegistrations > 0">
+<table *ngIf="currentEvent && currentOptimum && currentEvent.stats.totNumRegistrations > 0">
   <thead>
     <tr>
-      <th align="left" style="min-width: 100px">Name</th>
-      <th align="left" style="min-width: 100px">Position</th>
-      <th align="left" style="min-width: 100px">Offeriert</th>
+      <th align="left" style="min-width: 10em">Name</th>
+      <th align="left" style="min-width: 10em">Rolle</th>
+      <th align="left">Offeriert</th>
       <th></th>
     </tr>
   </thead>
-  <tbody *ngFor="let p of positions">
-    <tr *ngFor="let reg of registrations.data | rosterfilter:p">
-      <td style="background-color: #abffab;">{{reg.data.name}}</td>     
-      <td style="background-color: #abffab;">{{reg.data.position}}</td>   
-      <td *ngIf="reg.data.offers" style="background-color: #abffab;">{{reg.data.offers}}</td>
+  <tbody *ngFor="let p of currentOptimum.roles">
+    <tr *ngFor="let reg of currentEvent.registrations.data | rosterfilter:p">
+      <td style="background-color: #abffab; max-width: 40vw;">{{reg.data.name}}</td>
+      <td style="background-color: #abffab;">{{reg.data.role}}</td>
+      <td *ngIf="reg.data.offers"
+          style="background-color: #abffab; max-width: 9em;">
+        {{subStr(reg.data.offers, 9)}}
+      </td>
       <td *ngIf="!reg.data.offers"></td>
       <td *ngIf="reg.hrefs.hasOwnProperty('patch')">
         <button mat-icon-button color="standard" (click)="editRegistration(reg.id)"><i class="material-icons">edit</i></button>
       </td>
     </tr>
 
-    <tr *ngFor="let reg of registrations.data | scratchfilter:p">
+    <tr *ngFor="let reg of currentEvent.registrations.data | scratchfilter:p">
       <td style="background-color: #ffafaf;">{{reg.data.name}}</td>
-      <td style="background-color: #ffafaf;">{{reg.data.position}}</td>
-      <td *ngIf="reg.data.offers" style="background-color: #ffafaf;">{{reg.data.offers}}</td>
+      <td style="background-color: #ffafaf;">{{reg.data.role}}</td>
+      <td *ngIf="reg.data.offers"
+          style="background-color: #ffafaf; max-width: 9em;">
+        {{subStr(reg.data.offers, 9)}}
+      </td>
       <td *ngIf="!reg.data.offers"></td>
       <td *ngIf="reg.hrefs.hasOwnProperty('patch')">
         <button mat-icon-button color="standard" (click)="editRegistration(reg.id)"><i class="material-icons">edit</i></button>
-      </td>     
+      </td>
     </tr>
   </tbody>
 </table>

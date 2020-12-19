@@ -36,7 +36,32 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\app\shared\models\events.model.spec.ts" />
+    <None Remove="ClientApp\src\app\shared\models\events.model.ts" />
+    <None Remove="ClientApp\src\app\shared\models\optima.model.ts" />
+    <None Remove="ClientApp\src\app\shared\models\registrations.model.ts" />
+    <None Remove="ClientApp\src\app\shared\services\optima.service.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Base\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\app\shared\models\events.model.spec.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\shared\services\optima.service.ts" />
+    <TypeScriptCompile Include="ClientApp\src\app\shared\shared.module.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\app\shared\models\registrations.model.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\app\shared\models\events.model.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="ClientApp\src\app\shared\models\optima.model.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
