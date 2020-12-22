@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
 
 namespace opteamate {
 
@@ -52,10 +51,11 @@ namespace opteamate {
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
 
-      app.UseCors(policy =>
-        policy.WithOrigins("http://localhost:5000", "https://localhost:5001")
-          .AllowAnyMethod()
-          .WithHeaders(HeaderNames.ContentType));
+      //using Microsoft.Net.Http.Headers;
+      //app.UseCors(policy =>
+      //  policy.WithOrigins("http://localhost:5000", "https://localhost:5001")
+      //    .AllowAnyMethod()
+      //    .WithHeaders(HeaderNames.ContentType));
 
       if (env.IsDevelopment()) {
         app.UseDeveloperExceptionPage();
