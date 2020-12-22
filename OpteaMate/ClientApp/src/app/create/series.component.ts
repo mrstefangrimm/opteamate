@@ -12,7 +12,7 @@ import { IRegistrations, IRegistrationsInfo } from '../shared/models/registratio
 import { EventResponse, EventsSerivce } from '../shared/services/events.service'
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-series',
   templateUrl: './series.component.html',
 })
 

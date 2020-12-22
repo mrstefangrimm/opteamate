@@ -6,14 +6,14 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
 import { RegistrationEditComponent } from './registration-edit/registration-edit.component'
 import { EventEditComponent } from '../shared/components/event-edit.component'
-import { IOptimum, Optimum } from '../shared/models/optima.model'
-import { EventData, Event, IEvent, EventStats } from '../shared/models/events.model'
+import { Optimum } from '../shared/models/optima.model'
+import { EventData, Event, EventStats } from '../shared/models/events.model'
 import { RegistrationData } from '../shared/models/registrations.model'
 import { OptimaSerivce, OptimumResponse } from '../shared/services/optima.service'
 import { EventResponse, EventsSerivce } from '../shared/services/events.service'
 
 @Component({
-  selector: 'app-registration-component',
+  selector: 'app-registration',
   templateUrl: './registration.component.html',
 })
 

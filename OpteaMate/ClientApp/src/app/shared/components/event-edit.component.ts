@@ -5,7 +5,7 @@ import { Inject, Component, OnInit } from '@angular/core'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogConfig } from '@angular/material/dialog'
 
 @Component({
-  selector: 'event-edit',
+  selector: 'app-event-edit',
   templateUrl: './event-edit.component.html'
 })
 

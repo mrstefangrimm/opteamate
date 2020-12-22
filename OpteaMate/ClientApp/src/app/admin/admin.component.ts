@@ -5,7 +5,7 @@ import { Component, Inject } from '@angular/core'
 import { HttpClient } from '@angular/common/http'
 
 @Component({
-  selector: 'app-admin-component',
+  selector: 'admin-component',
   templateUrl: './admin.component.html'
 })
 
