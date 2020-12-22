@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
 import { TocService } from './toc.service'
-import { IOptimum, IOptimumData } from '../models/optima.model'
+import { IOptimumData } from '../models/optima.model'
 
 @Injectable({
   providedIn: 'root'
