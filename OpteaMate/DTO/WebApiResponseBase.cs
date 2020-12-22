@@ -3,7 +3,7 @@
 //
 using System.Collections.Generic;
 
-namespace opteamate {
+namespace OpteaMate.Web {
   public abstract class WebApiResponseBase<TDATA> : IWebApiResponse {
     public abstract string Type { get;  }
     public TDATA Data { get; set; }

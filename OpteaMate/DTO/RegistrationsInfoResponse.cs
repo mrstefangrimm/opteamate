@@ -3,7 +3,7 @@
 //
 using OpteaMate.Domain;
 
-namespace opteamate {
+namespace OpteaMate.Web {
   public class RegistrationsInfoResponse : WebApiResponseBase<RegistrationsInfoData> {
     public override string Type => WebApiResponseType.Collection.ToString();
   }

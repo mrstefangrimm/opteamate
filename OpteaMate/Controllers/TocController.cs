@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace opteamate {
+namespace OpteaMate.Web {
 
   [Route("api/[controller]")]
   [ApiController]

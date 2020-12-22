@@ -3,7 +3,7 @@
 //
 using System.Collections.Generic;
 
-namespace opteamate {
+namespace OpteaMate.Web {
 
   interface IWebApiResponse {
     string Type { get; }

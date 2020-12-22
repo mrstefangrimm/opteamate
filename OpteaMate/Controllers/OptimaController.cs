@@ -9,7 +9,7 @@ using OpteaMate.Persistence;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace opteamate {
+namespace OpteaMate.Web {
 
   [Route("api/[controller]")]
   [ApiController]

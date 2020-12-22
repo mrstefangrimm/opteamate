@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace opteamate {
+namespace OpteaMate.Web {
   public class Program {
     public static void Main(string[] args) {
       CreateHostBuilder(args).Build().Run();

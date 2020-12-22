@@ -4,7 +4,7 @@
 using Microsoft.EntityFrameworkCore;
 using OpteaMate.Persistence;
 
-namespace opteamate {
+namespace OpteaMate.Web {
 
   public class OpteaMateContext : DbContext {
     public OpteaMateContext(DbContextOptions<OpteaMateContext> options)

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace opteamate {
+namespace OpteaMate.Web {
 
   public class Startup {
     public Startup(IConfiguration configuration) {

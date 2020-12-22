@@ -115,11 +115,13 @@
 
   <PropertyGroup>
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+    <AssemblyName>OpteaMate.Web</AssemblyName>
+    <RootNamespace>OpteaMate.Web</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <NoWarn>1701;1702;1591</NoWarn>
-    <DocumentationFile>C:\Users\Stefan Grimm\Documents\github\opteamate\OpteaMate\OpteaMate.xml</DocumentationFile>
+    <DocumentationFile>C:\Users\Stefan Grimm\Documents\github\opteamate\OpteaMate\OpteaMate.Web.xml</DocumentationFile>
   </PropertyGroup>
   
 </Project>

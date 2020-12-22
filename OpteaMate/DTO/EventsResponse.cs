@@ -3,7 +3,7 @@
 //
 using System.Collections.Generic;
 
-namespace opteamate {
+namespace OpteaMate.Web {
   public class EventsResponse : WebApiResponseBase<ICollection<EventResponse>> {
     public override string Type => WebApiResponseType.Collection.ToString();
   }

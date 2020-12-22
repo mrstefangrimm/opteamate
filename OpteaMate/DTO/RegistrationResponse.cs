@@ -3,7 +3,7 @@
 //
 using OpteaMate.Domain;
 
-namespace opteamate {
+namespace OpteaMate.Web {
   public class RegistrationResponse : WebApiResponseBase<RegistrationData> {
     public override string Type => WebApiResponseType.Resource.ToString();
     public long Id { get; set; }

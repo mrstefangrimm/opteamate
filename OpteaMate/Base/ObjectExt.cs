@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace opteamate {
+namespace OpteaMate.Web {
   public static class ObjectExt {
     public static T1 CopyFrom<T1, T2>(this T1 destination, T2 source) where T1 : class where T2 : class {
 

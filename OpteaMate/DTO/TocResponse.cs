@@ -3,7 +3,7 @@
 //
 using System.Collections.Generic;
 
-namespace opteamate {
+namespace OpteaMate.Web {
   public class TocResponse : IWebApiResponse {
     public string Type => WebApiResponseType.Collection.ToString();
     public object Data { get; }

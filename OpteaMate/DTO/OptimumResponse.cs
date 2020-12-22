@@ -3,7 +3,7 @@
 //
 using OpteaMate.Domain;
 
-namespace opteamate {
+namespace OpteaMate.Web {
 
   public class OptimumResponse : WebApiResponseBase<OptimumData> {
     public override string Type => WebApiResponseType.Resource.ToString();
