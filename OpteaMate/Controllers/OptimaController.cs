@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OpteaMate.Domain;
+using OpteaMate.Persistence;
 using System.Collections.Generic;
 using System.Linq;
 

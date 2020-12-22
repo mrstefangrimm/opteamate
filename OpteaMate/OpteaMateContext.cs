@@ -2,6 +2,7 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 using Microsoft.EntityFrameworkCore;
+using OpteaMate.Persistence;
 
 namespace opteamate {
 

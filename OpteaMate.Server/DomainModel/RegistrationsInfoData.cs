@@ -2,7 +2,7 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 
-namespace opteamate {
+namespace OpteaMate.Domain {
   public class RegistrationsInfoData {
     public long NumRegistrations { get; set; }
     public long NumMissing { get; set; }

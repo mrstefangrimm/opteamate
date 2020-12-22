@@ -48,6 +48,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OpteaMate.Persistence\OpteaMate.Persistence.csproj" />
+    <ProjectReference Include="..\OpteaMate.Server\OpteaMate.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <TypeScriptCompile Include="ClientApp\src\app\shared\models\events.model.spec.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\shared\services\optima.service.ts" />
     <TypeScriptCompile Include="ClientApp\src\app\shared\shared.module.ts">

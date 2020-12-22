@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace opteamate {
+namespace OpteaMate.Domain {
   public class EventData {
     [Required]
     public Guid EventToken { get; set; }    
