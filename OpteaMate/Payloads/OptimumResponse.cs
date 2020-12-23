@@ -2,11 +2,12 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 using OpteaMate.Domain;
+using RestBunch;
 
 namespace OpteaMate.Web {
 
   public class OptimumResponse : WebApiResponseBase<OptimumData> {
-    public override string Type => WebApiResponseType.Resource.ToString();
+    public override WebApiResponseType Type => WebApiResponseType.Resource;
     public long Id { get; set; }
   }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpteaMate.Domain;
 using OpteaMate.Persistence;
+using RestBunch;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -368,9 +369,9 @@ namespace OpteaMate.Web {
         }
       }
 
-      response.AddHref(HrefType.SELF, "enroll/" + dbo.EventToken);
+      response.AddHref(OpteaMateHrefType.SELF, "enroll/" + dbo.EventToken);
       if (dbo.SeriesToken.HasValue && dbo.SeriesToken != Guid.Empty) {
-        response.AddHref(HrefType.BACK, "series/" + dbo.SeriesToken);
+        response.AddHref(OpteaMateHrefType.BACK, "series/" + dbo.SeriesToken);
       }
       // DeleteEvent; also possible to delete past events
       response.AddHref(HrefType.DELETE, $"api/events/{dbo.EventDboId}");

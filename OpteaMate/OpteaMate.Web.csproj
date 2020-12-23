@@ -50,6 +50,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpteaMate.Persistence\OpteaMate.Persistence.csproj" />
     <ProjectReference Include="..\OpteaMate.Server\OpteaMate.Domain.csproj" />
+    <ProjectReference Include="..\RestBunch\RestBunch.csproj" />
   </ItemGroup>
 
   <ItemGroup>

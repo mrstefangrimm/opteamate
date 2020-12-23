@@ -3,10 +3,10 @@
 //
 using System.Collections.Generic;
 
-namespace OpteaMate.Web {
+namespace RestBunch {
 
-  interface IWebApiResponse {
-    string Type { get; }
+  public interface IWebApiResponse {
+    WebApiResponseType Type { get; }
     IDictionary<string, string> Hrefs { get; }
   }
 }

@@ -3,6 +3,7 @@
 //
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RestBunch;
 
 namespace OpteaMate.Web {
 
@@ -22,9 +23,9 @@ namespace OpteaMate.Web {
       var request = HttpContext.Request;
       var baseUrl = string.Format("{0}://{1}{2}", request.Scheme, request.Host, request.PathBase);
 
-      response.AddHref(HrefType.ROOT, baseUrl + "/api/");
-      response.AddHref(HrefType.EVENTS, baseUrl + "/api/events/");
-      response.AddHref(HrefType.OPTIMA, baseUrl + "/api/optima/");
+      response.AddHref(OpteaMateHrefType.ROOT, baseUrl + "/api/");
+      response.AddHref(OpteaMateHrefType.EVENTS, baseUrl + "/api/events/");
+      response.AddHref(OpteaMateHrefType.OPTIMA, baseUrl + "/api/optima/");
 
       return Ok(response);
     }
