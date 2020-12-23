@@ -4,7 +4,7 @@
 namespace RestBunch {
 
   public enum WebApiResponseType {
-    Resource,
+    Payload,
     Collection
   }
 
@@ -16,17 +16,7 @@ namespace RestBunch {
     PATCH,
     DELETE
   }
-
-  public class Val2Type<T> {
-    public Val2Type(T val) {
-      Val = val;
-    }
-    public override string ToString() {
-      return Val.ToString();
-    }
-    public T Val { get; }
-  }
-
+  
   public class HrefType {
     public static Val2Type<GenericHrefType> SELF = new Val2Type<GenericHrefType>(GenericHrefType.SELF);
     public static Val2Type<GenericHrefType> GET = new Val2Type<GenericHrefType>(GenericHrefType.GET);
@@ -41,4 +31,15 @@ namespace RestBunch {
       target.Hrefs.Add(type.ToString().ToLower(), value?.ToLower());
     }
   }
+
+  public class Val2Type<T> {
+    public Val2Type(T val) {
+      Val = val;
+    }
+    public override string ToString() {
+      return Val.ToString();
+    }
+    public T Val { get; }
+  }
+
 }
