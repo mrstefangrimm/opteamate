@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace RestBunch {
   public abstract class WebApiResponseBase<TDATA> : IWebApiResponse {
-    public abstract WebApiResponseType Type { get;  }
+    public abstract string Type { get;  }
     public TDATA Data { get; set; }
     public IDictionary<string, string> Hrefs { get; } = new Dictionary<string, string>();
   }

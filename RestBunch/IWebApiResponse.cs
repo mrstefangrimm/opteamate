@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace RestBunch {
 
   public interface IWebApiResponse {
-    WebApiResponseType Type { get; }
+    string Type { get; }
     IDictionary<string, string> Hrefs { get; }
   }
 }

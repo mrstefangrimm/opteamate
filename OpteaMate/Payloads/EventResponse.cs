@@ -6,7 +6,7 @@ using RestBunch;
 
 namespace OpteaMate.Web {
   public class EventResponse : WebApiResponseBase<EventData> {
-    public override WebApiResponseType Type => WebApiResponseType.Resource;
+    public override string Type => WebApiResponseType.Payload.ToString();
     public long Id { get; set; }
     public RegistrationsResponse Registrations { get; set; }
   }

@@ -6,6 +6,6 @@ using System.Collections.Generic;
 
 namespace OpteaMate.Web {
   public class OptimaResponse : WebApiResponseBase<ICollection<OptimumResponse>> {
-    public override WebApiResponseType Type => WebApiResponseType.Collection;
+    public override string Type => WebApiResponseType.Collection.ToString();
   }
 }

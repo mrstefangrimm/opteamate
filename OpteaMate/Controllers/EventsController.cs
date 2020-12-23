@@ -369,7 +369,7 @@ namespace OpteaMate.Web {
         }
       }
 
-      response.AddHref(OpteaMateHrefType.SELF, "enroll/" + dbo.EventToken);
+      response.AddHref(HrefType.SELF, "enroll/" + dbo.EventToken);
       if (dbo.SeriesToken.HasValue && dbo.SeriesToken != Guid.Empty) {
         response.AddHref(OpteaMateHrefType.BACK, "series/" + dbo.SeriesToken);
       }

@@ -6,8 +6,7 @@ using System.Collections.Generic;
 
 namespace OpteaMate.Web {
   public class EventsInfoResponse : IWebApiResponse {
-
-    public WebApiResponseType Type => WebApiResponseType.Collection;
+    public string Type => WebApiResponseType.Collection.ToString();
     public object Data { get; }
     public IDictionary<string, string> Hrefs { get; } = new Dictionary<string, string>();
   }
