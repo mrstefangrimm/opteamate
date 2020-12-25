@@ -209,17 +209,20 @@ namespace OpteaMate.Web {
     /// </remarks>
     [HttpPost]
     [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
-    public async Task<IActionResult> PostEvent(EventData evt) {
+    public IActionResult PostEvent(EventData evt) {
 
       var evtDbo = new EventDbo();
       evtDbo.CopyFrom(evt);
       evtDbo.EventToken = Guid.NewGuid();
-      _context.Events.Add(evtDbo);
 
-      var saving = _context.SaveChangesAsync();
+      using (var dbContextTransaction = _context.Database.BeginTransaction()) {
+        _context.Events.Add(evtDbo);
+
+        _context.SaveChanges();
+        dbContextTransaction.Commit();
+      }
+
       EventResponse evtDto = CreateEventResponse(evtDbo);
-      await saving; 
-
       return CreatedAtAction(nameof(GetEvent), new { evtDbo.EventDboId }, evtDto);
     }
 
@@ -227,22 +230,28 @@ namespace OpteaMate.Web {
     [HttpPost("{id}/registrations")]
     [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PostEventRegistration(long id, RegistrationData reg) {
+    public IActionResult PostEventRegistration(long id, RegistrationData regData) {
 
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
 
+      // https://docs.microsoft.com/en-us/ef/ef6/saving/transactions
+      // Not sure what happens if the event was removed in the meamwhile
       _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
 
-      if (evtDbo.Registrations == null) { evtDbo.Registrations = new List<RegistrationDbo>(); }
-      var regDbo = new RegistrationDbo();
-      evtDbo.Registrations.Add(regDbo);
-      regDbo.CopyFrom(reg);
+      using (var dbContextTransaction = _context.Database.BeginTransaction()) {
 
-      _context.Update(evtDbo);
-      var saving = _context.SaveChangesAsync();
+        var regDbo = new RegistrationDbo();
+        regDbo.CopyFrom(regData);
+        evtDbo.Registrations.Add(regDbo);
+
+        _context.Update(evtDbo);
+        _context.SaveChanges();
+        dbContextTransaction.Commit();
+      }
+
+      if (evtDbo.Registrations == null) { evtDbo.Registrations = new List<RegistrationDbo>(); }
       var evtDto = CreateEventResponse(evtDbo);
-      await saving;
 
       return CreatedAtAction(nameof(GetEvent), new { evtDbo.EventDboId }, evtDto);
     }
@@ -251,65 +260,54 @@ namespace OpteaMate.Web {
     [HttpPatch("{id}")]
     [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PatchEvent(long id, EventData evt) {
+    public IActionResult PatchEvent(long id, EventData evt) {
 
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
 
       _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
 
-      evtDbo.Start = evt.Start;
-      evtDbo.Title = evt.Title;
-      evtDbo.Location = evt.Location;
-      _context.Entry(evtDbo).State = EntityState.Modified;
+      using (var dbContextTransaction = _context.Database.BeginTransaction()) {
 
-      try {
-        var saving = _context.SaveChangesAsync();
-        var evtDto = CreateEventResponse(evtDbo);
-        await saving;
-        return Ok(evtDto);
+        evtDbo.Start = evt.Start;
+        evtDbo.Title = evt.Title;
+        evtDbo.Location = evt.Location;
+        _context.Entry(evtDbo).State = EntityState.Modified;
+             
+        _context.SaveChanges();
+        dbContextTransaction.Commit();
       }
-      catch (DbUpdateConcurrencyException) {
-        if (!_context.Events.Any(e => e.EventDboId == id)) {
-          return NotFound();
-        }
-        else {
-          throw;
-        }
-      }
+
+      var evtDto = CreateEventResponse(evtDbo);
+      return Ok(evtDto);
     }
 
     // PATCH: api/events/5/registrations/1
     [HttpPatch("{id}/registrations/{regid}")]
     [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(StatusCodeResult), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> PatchEventRegistration(long id, long regid, RegistrationData reg) {
+    public IActionResult PatchEventRegistration(long id, long regid, RegistrationData reg) {
 
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
 
       var regDbo = _context.Registrations.Find(regid);
       if (regDbo == null) { return NotFound(); }
-      regDbo.Name = reg.Name;
-      regDbo.Offers = reg.Offers;
-      _context.Entry(regDbo).State = EntityState.Modified;
+
+      using (var dbContextTransaction = _context.Database.BeginTransaction()) {
+
+        regDbo.Name = reg.Name;
+        regDbo.Offers = reg.Offers;
+        _context.Entry(regDbo).State = EntityState.Modified;
+
+        _context.SaveChanges();
+        dbContextTransaction.Commit();
+      }
 
       _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
 
-      try {
-        var saving = _context.SaveChangesAsync();
-        var evtDto = CreateEventResponse(evtDbo);
-        await saving;
-        return Ok(evtDto);
-      }
-      catch (DbUpdateConcurrencyException) {
-        if (!_context.Registrations.Any(e => e.RegistrationDboId == id)) {
-          return NotFound();
-        }
-        else {
-          throw;
-        }
-      }      
+      var evtDto = CreateEventResponse(evtDbo);
+      return Ok(evtDto);
     }
 
     // DELETE: api/events/5
@@ -321,14 +319,18 @@ namespace OpteaMate.Web {
       var evtDbo = _context.Events.Find(id);
       if (evtDbo == null) { return NotFound(); }
 
-      _context.Events.Remove(evtDbo);
+      using (var dbContextTransaction = _context.Database.BeginTransaction()) {
 
-      _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
-      if (evtDbo.Registrations != null) {
-        _context.Registrations.RemoveRange(evtDbo.Registrations.ToArray());
+        _context.Events.Remove(evtDbo);
+        _context.Entry(evtDbo).Collection(e => e.Registrations).Load();
+        if (evtDbo.Registrations != null) {
+          _context.Registrations.RemoveRange(evtDbo.Registrations.ToArray());
+        }
+
+        _context.SaveChanges();
+        dbContextTransaction.Commit();
       }
 
-      _context.SaveChanges();
       return NoContent();
     }
 
