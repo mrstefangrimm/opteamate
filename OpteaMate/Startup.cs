@@ -8,21 +8,43 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpteaMate.Web.Toc.Domain;
 
 namespace OpteaMate.Web {
 
   public class Startup {
-    public Startup(IConfiguration configuration) {
+
+    readonly string LocalhostOrigins = "LocalhostOrigins";
+    private readonly IWebHostEnvironment _env;
+
+    public Startup(IConfiguration configuration, IWebHostEnvironment env) {
       Configuration = configuration;
+      _env = env;
     }
 
     public IConfiguration Configuration { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services) {
-      services.AddControllersWithViews();
+
+      services.AddCors(options => {
+        options.AddPolicy(name: LocalhostOrigins,
+                          builder => {
+                            builder.WithOrigins(
+                              "http://localhost:4700");
+                          });
+
+      });
+
       services.AddDbContext<OpteaMateContext>(opt => opt.UseSqlite("DefaultConnection"));
-      
+
+      if (_env.IsDevelopment()) {
+        services.AddSingleton<ITocService>(new TocServiceFake());
+      }
+      else {
+        services.AddSingleton<ITocService>(new TocService());
+      }
+
       // https://docs.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-nswag?view=aspnetcore-3.1&tabs=visual-studio
       services.AddSwaggerDocument(
         config => {
@@ -46,17 +68,13 @@ namespace OpteaMate.Web {
       services.AddSpaStaticFiles(configuration => {
         configuration.RootPath = "ClientApp/dist";
       });
+
+      services.AddControllersWithViews();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
-
-      //using Microsoft.Net.Http.Headers;
-      //app.UseCors(policy =>
-      //  policy.WithOrigins("http://localhost:5000", "https://localhost:5001")
-      //    .AllowAnyMethod()
-      //    .WithHeaders(HeaderNames.ContentType));
-
+      
       if (env.IsDevelopment()) {
         app.UseDeveloperExceptionPage();
       }
@@ -73,6 +91,8 @@ namespace OpteaMate.Web {
       }
 
       app.UseRouting();
+
+      app.UseCors(LocalhostOrigins);
 
       app.UseEndpoints(endpoints => {
         endpoints.MapControllerRoute(

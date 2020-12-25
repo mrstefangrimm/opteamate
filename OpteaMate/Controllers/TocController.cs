@@ -3,6 +3,7 @@
 //
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OpteaMate.Web.Toc.Domain;
 using RestBunch;
 
 namespace OpteaMate.Web {
@@ -10,8 +11,11 @@ namespace OpteaMate.Web {
   [Route("api/[controller]")]
   [ApiController]
   public class TocController : ControllerBase {
+    
+    private readonly ITocService _tocService;
 
-    public TocController() {
+    public TocController(ITocService tocService) {
+      _tocService = tocService;
     }
 
     // GET: api/toc
@@ -20,8 +24,9 @@ namespace OpteaMate.Web {
     public IActionResult GetToc() {
       var response = new TocResponse();
   
-      var request = HttpContext.Request;
-      var baseUrl = string.Format("{0}://{1}{2}", request.Scheme, request.Host, request.PathBase);
+      var baseUrl = _tocService.GetBaseUrl();
+      //var request = HttpContext.Request;
+      //var baseUrl = string.Format("{ 0}://{1}{2}", request.Scheme, request.Host, request.PathBase);
 
       response.AddHref(OpteaMateHrefType.ROOT, baseUrl + "/api/");
       response.AddHref(OpteaMateHrefType.EVENTS, baseUrl + "/api/events/");
