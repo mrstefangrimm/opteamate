@@ -7,7 +7,7 @@ import { IOptimum, Optimum } from '../../shared/models/optima.model'
 import { OptimaSerivce } from '../../shared/services/optima.service'
 
 @Component({
-  selector: 'event-view',
+  selector: 'app-event-view',
   templateUrl: './event-view.component.html'
 })
 

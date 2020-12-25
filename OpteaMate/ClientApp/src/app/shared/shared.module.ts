@@ -5,6 +5,7 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms'
+import { HttpClientModule } from '@angular/common/http'
 
 import { MatInputModule } from '@angular/material/input'
 import { MatSelectModule } from '@angular/material/select'
@@ -19,6 +20,7 @@ import { EventEditComponent } from './components/event-edit.component';
   imports: [
     CommonModule,
     FormsModule,
+    HttpClientModule,
     MatInputModule,
     MatSelectModule,
     MatNativeDateModule,

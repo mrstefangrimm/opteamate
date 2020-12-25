@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpteaMate", "OpteaMate\OpteaMate.csproj", "{BA963401-AF22-4DD5-B9D7-C4838C5F3E76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpteaMate.Web", "OpteaMate\OpteaMate.Web.csproj", "{BA963401-AF22-4DD5-B9D7-C4838C5F3E76}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorMate", "BlazorMate\BlazorMate.csproj", "{DD4B9497-1A67-40FB-9103-59FF7A4FDF88}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpteaMate.Persistence", "OpteaMate.Persistence\OpteaMate.Persistence.csproj", "{9DD123AD-F904-4941-8064-D00EE76855DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestBunch", "RestBunch\RestBunch.csproj", "{123645D8-7936-4D06-A4A3-92CC945C866D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpteaMate.Domain", "OpteaMate.Domain\OpteaMate.Domain.csproj", "{BD55CB91-1ECB-4420-81E6-C49226FBF90E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{DD4B9497-1A67-40FB-9103-59FF7A4FDF88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD4B9497-1A67-40FB-9103-59FF7A4FDF88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD4B9497-1A67-40FB-9103-59FF7A4FDF88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DD123AD-F904-4941-8064-D00EE76855DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DD123AD-F904-4941-8064-D00EE76855DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DD123AD-F904-4941-8064-D00EE76855DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DD123AD-F904-4941-8064-D00EE76855DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{123645D8-7936-4D06-A4A3-92CC945C866D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{123645D8-7936-4D06-A4A3-92CC945C866D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{123645D8-7936-4D06-A4A3-92CC945C866D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{123645D8-7936-4D06-A4A3-92CC945C866D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -146,14 +146,16 @@ export class EventsSerivce {
       this.http.get<EventsResponse>(request)
         .subscribe(result => {
           let idFound: number = null
-          result.data.forEach(item => {
-            console.log(item.data.eventToken)
-            console.log(token)
-            if (item.data.eventToken === token) {
-              console.log(item.id)
-              idFound = item.id
-            }
-          })
+          if (result.data != null) {
+            result.data.forEach(item => {
+              console.log(item.data.eventToken)
+              console.log(token)
+              if (item.data.eventToken === token) {
+                console.log(item.id)
+                idFound = item.id
+              }
+            })
+          }
           if (idFound != null) {
             this.getEventById(idFound).subscribe(
               result => {

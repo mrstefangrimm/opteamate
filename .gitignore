@@ -349,3 +349,12 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 /OpteaMate/ClientApp/e2e
+/OpteaMate/ClientApp/src/app/shared/models/events.model.js.map
+/OpteaMate/ClientApp/src/app/shared/models/events.model.js
+/OpteaMate/ClientApp/src/app/shared/models/optima.model.js.map
+/OpteaMate/ClientApp/src/app/shared/models/optima.model.js
+/OpteaMate/ClientApp/src/app/shared/models/registrations.model.js.map
+/OpteaMate/ClientApp/src/app/shared/models/registrations.model.js
+/OpteaMate/ClientApp/src/assets/.gitkeep
+/OpteaMate/ClientApp/.gitignore
+/OpteaMate/ClientApp/.editorconfig
