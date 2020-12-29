@@ -44,10 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Base\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\OpteaMate.Domain\OpteaMate.Domain.csproj" />
     <ProjectReference Include="..\OpteaMate.Persistence\OpteaMate.Persistence.csproj" />
     <ProjectReference Include="..\RestBunch\RestBunch.csproj" />
