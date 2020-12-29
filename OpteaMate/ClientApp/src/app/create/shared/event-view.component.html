@@ -2,25 +2,27 @@
      Licensed under the GPL. See LICENSE file in the project root for full license information.
 -->
 
+
+<h2 *ngIf="config.title">{{config.title}}</h2>
+
+<div *ngIf="selectedOptimum">
+  <mat-form-field>
+    <mat-label>Typ</mat-label>
+    <mat-select [(value)]="selectedOptimum">
+      <mat-option *ngFor="let o of optima" [value]="o">{{o.data.name}}</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <button mat-icon-button color="standard" (click)="addScheme()"><i class="material-icons">edit</i></button>
+</div>
+
+<blockquote *ngIf="selectedOptimum">
+  <mat-label>Rollen: {{selectedOptimum.data.roles}}</mat-label><br />
+  <mat-label>Optima: {{selectedOptimum.data.strategies}}</mat-label><br />
+  <mat-label *ngIf="selectedOptimum.data.overrepresentationMatrix">&Uuml;berrepresentation: [{{selectedOptimum.data.overrepresentationMatrix}}]</mat-label><br *ngIf="selectedOptimum.data.overrepresentationMatrix" />
+  <mat-label *ngIf="selectedOptimum.data.maximum">Maximum: {{selectedOptimum.data.maximum}} </mat-label>
+</blockquote>
+
 <form>
-
-  <h2 *ngIf="config.title">{{config.title}}</h2>
-
-  <div *ngIf="selectedOptimum">
-    <mat-form-field>
-      <mat-label>Typ</mat-label>
-      <mat-select [(value)]="selectedOptimum">
-        <mat-option *ngFor="let o of optima" [value]="o">{{o.data.name}}</mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
-  <blockquote *ngIf="selectedOptimum">
-    <mat-label>Rollen: {{selectedOptimum.data.roles}}</mat-label><br />
-    <mat-label>Optima: {{selectedOptimum.data.strategies}}</mat-label><br />
-    <mat-label *ngIf="selectedOptimum.data.overrepresentationMatrix">&Uuml;berrepresentation: [{{selectedOptimum.data.overrepresentationMatrix}}]</mat-label><br *ngIf="selectedOptimum.data.overrepresentationMatrix" />
-    <mat-label *ngIf="selectedOptimum.data.maximum">Maximum: {{selectedOptimum.data.maximum}} </mat-label>
-  </blockquote>
-
   <div>
     <mat-form-field>
       <mat-label>Was</mat-label>
@@ -82,5 +84,3 @@
   </button>
 
 </form>
-
-

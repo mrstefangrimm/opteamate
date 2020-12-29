@@ -33,7 +33,8 @@ describe('Event', () => {
 
     givenOptimumFromHttp = {
       id: 1,
-      data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, strategies: '1-1', roles: 'A;B' }    }
+      data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, strategies: '1-1', roles: 'A;B', seriesToken: null }
+    }
   })
 
   afterEach(() => {

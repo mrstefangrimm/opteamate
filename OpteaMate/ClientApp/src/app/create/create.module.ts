@@ -13,10 +13,13 @@ import { MatNativeDateModule } from '@angular/material/core'
 import { MatDatepickerModule } from '@angular/material/datepicker'
 import { MatDialogModule } from '@angular/material/dialog'
 import { MatButtonModule } from '@angular/material/button'
+import { MatIconModule } from '@angular/material/icon'
+import { MatExpansionModule } from '@angular/material/expansion'
 
-import { HomeComponent } from './home.component';
-import { SeriesComponent } from './series.component';
-import { EventViewComponent } from './shared/event-view.component';
+import { HomeComponent } from './home.component'
+import { SeriesComponent } from './series.component'
+import { EventViewComponent } from './shared/event-view.component'
+import { OptimumEditComponent } from './shared/optimum-edit.component';
 
 @NgModule({
   imports: [
@@ -28,9 +31,11 @@ import { EventViewComponent } from './shared/event-view.component';
     MatNativeDateModule,
     MatDatepickerModule,
     MatDialogModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule,
+    MatExpansionModule
   ],
-  declarations: [HomeComponent, SeriesComponent, EventViewComponent],
+  declarations: [HomeComponent, SeriesComponent, EventViewComponent, OptimumEditComponent],
   exports: [CommonModule, FormsModule]
 })
 export class CreateModule { }

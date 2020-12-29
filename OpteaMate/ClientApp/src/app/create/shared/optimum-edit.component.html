@@ -1,0 +1,122 @@
+<!-- Copyright (c) 2020 Stefan Grimm. All rights reserved.
+     Licensed under the GPL. See LICENSE file in the project root for full license information.
+-->
+
+<mat-form-field class="example-full-width">
+  <mat-label>Name</mat-label>
+  <input required
+         minlength="2"
+         matInput
+         name="name"
+         [(ngModel)]="currentOptimum.data.name"
+         type="text" />
+  <mat-error>Name, mindestens 2 Zeichen</mat-error>
+</mat-form-field>
+
+<mat-expansion-panel hideToggle>
+  <mat-expansion-panel-header>
+    <mat-panel-title>Optima</mat-panel-title>
+    <mat-panel-description>Optimale Anzahl Teilnehmer pro Rolle</mat-panel-description>
+  </mat-expansion-panel-header>
+  <table>
+    <thead>
+      <tr>
+        <th>Rolle/Optimum</th>
+        <th *ngFor="let o of optimaMat.slice(1, optimaMat.length); index as oi">
+          {{oi + 1}}
+        </th>
+        <th>
+          <button mat-icon-button
+                  color="standard"
+                  (click)="addOptima()">
+            <i class="material-icons">add</i>
+          </button>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of optimaMat[0]; index as ri">
+        <td *ngFor="let o of optimaMat; index as oi">
+          <mat-form-field style="text-align: center"
+                          [style.width.px]=60>
+            <input matInput
+                   required
+                   name="item_{{oi}}{{ri}}"
+                   [(ngModel)]="optimaMat[oi][ri]"
+                   type="text" />
+            <mat-error>mindestens 1 Zeichen</mat-error>
+          </mat-form-field>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <form>
+    <mat-form-field class="example-full-width">
+      <mat-label>Rolle</mat-label>
+      <input required
+             minlength="2"
+             matInput
+             name="role"
+             [(ngModel)]="newRoleName"
+             type="text"
+             class="form-control" />
+      <mat-error>Rolle, mindestens 2 Zeichen</mat-error>
+    </mat-form-field>
+    <button mat-icon-button
+            type="reset"
+            color="standard"
+            (click)="addRole()">
+      <i class="material-icons">add</i>
+    </button>
+  </form>
+</mat-expansion-panel>
+
+<mat-expansion-panel hideToggle>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Maxima
+    </mat-panel-title>
+    <mat-panel-description>
+      Maximale Anzahl Teilnehmer (optional)
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rolle</th>
+        <th>Maximum</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let x of optimaMax | keyvalue">
+        <td>{{x.key}}</td>
+        <td>
+          <mat-form-field class="example-full-width">
+            <input matInput
+                   name="max_{{x.key}}"
+                   [(ngModel)]="optimaMax[x.key]"
+                   type="text" />
+          </mat-form-field>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</mat-expansion-panel>
+
+<table>
+  <tbody>
+    <tr>
+      <td align="left">
+        <button mat-icon-button color="standard"
+                [disabled]="false"
+                (click)="apply()">
+          <i class="material-icons">done</i>
+        </button>
+        <button mat-icon-button color="standard" (click)="cancel()"><i class="material-icons">cancel</i></button>
+      </td>
+    </tr>
+  </tbody>
+</table>
