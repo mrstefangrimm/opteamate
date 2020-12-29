@@ -9,11 +9,8 @@ import { TocService } from './toc.service'
 import { EventData, IEvent } from '../models/events.model'
 import { IRegistration, RegistrationData, IRegistrations, IRegistrationsInfo } from '../models/registrations.model'
 
-@Injectable({
-  providedIn: 'root'
-})
-
-export class EventsSerivce {
+@Injectable({ providedIn: 'root' })
+export class EventsService {
 
   private eventsHref: string
 

@@ -9,7 +9,7 @@ import { EventViewComponentInput, EventViewComponentOutput } from './shared/even
 import { EventEditComponent } from '../shared/components/event-edit.component'
 import { EventData, IEvent } from '../shared/models/events.model'
 import { IRegistrations, IRegistrationsInfo } from '../shared/models/registrations.model'
-import { EventResponse, EventsSerivce } from '../shared/services/events.service'
+import { EventResponse, EventsService } from '../shared/services/events.service'
 
 @Component({
   selector: 'app-series',
@@ -29,7 +29,7 @@ export class SeriesComponent {
     private route: ActivatedRoute,
     private dateAdapter: DateAdapter<Date>,
     private dialog: MatDialog,
-    private readonly eventsService: EventsSerivce,
+    private readonly eventsService: EventsService,
     @Inject('BASE_URL') private readonly baseUrl: string) {
 
     this.dateAdapter.setLocale('de');
@@ -47,6 +47,7 @@ export class SeriesComponent {
 
     this.route.params.subscribe(params => {
       this.seriesToken = params.seriestoken
+      this.eventViewInput.seriesToken = params.seriestoken
       this.getEventsBySeriesToken()
     })
   }
@@ -97,7 +98,7 @@ export class SeriesComponent {
                   }, error => console.error(error))
               }
               else {
-                var evt = new EventData()
+                let evt = new EventData()
                 evt.title = data.data.eventTitle
                 evt.location = data.data.eventLocation
                 evt.start = data.data.eventStartTime
@@ -120,7 +121,7 @@ export class SeriesComponent {
   }
 
   onNotify(args: EventViewComponentOutput) {
-    var newEvent = new EventData()
+    let newEvent = new EventData()
     newEvent.title = args.title
     newEvent.location = args.location
     newEvent.optimumId = args.optimumId
@@ -155,7 +156,7 @@ export class SeriesComponent {
 
   updateEventData(other: EventResponse) {
     if (this.events != null) {
-      var evt = this.events.find(x => x.id == other.id)
+      let evt = this.events.find(x => x.id == other.id)
       if (evt != null) {
         evt.data = other.data
       }

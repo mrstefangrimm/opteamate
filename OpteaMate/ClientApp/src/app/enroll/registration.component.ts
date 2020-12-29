@@ -10,7 +10,7 @@ import { Optimum } from '../shared/models/optima.model'
 import { EventData, Event, EventStats } from '../shared/models/events.model'
 import { RegistrationData } from '../shared/models/registrations.model'
 import { OptimaSerivce, OptimumResponse } from '../shared/services/optima.service'
-import { EventResponse, EventsSerivce } from '../shared/services/events.service'
+import { EventResponse, EventsService } from '../shared/services/events.service'
 
 @Component({
   selector: 'app-registration',
@@ -36,7 +36,7 @@ export class RegistrationComponent {
     private readonly router: Router,
     private dialog: MatDialog,
     private readonly optimaService: OptimaSerivce,
-    private readonly eventsService: EventsSerivce,
+    private readonly eventsService: EventsService,
     @Inject('BASE_URL') private readonly baseUrl: string) {    
   }
 
@@ -137,7 +137,7 @@ export class RegistrationComponent {
     dialogRef.afterClosed().subscribe(
       data => {
         if (data != null) {
-          var evt = new EventData()
+          let evt = new EventData()
           evt.title = data.data.eventTitle
           evt.location = data.data.eventLocation
           evt.start = data.data.eventStartTime
