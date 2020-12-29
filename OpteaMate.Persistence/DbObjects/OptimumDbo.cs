@@ -6,5 +6,7 @@ using OpteaMate.Domain;
 namespace OpteaMate.Persistence {
   public class OptimumDbo : OptimumData {
     public long OptimumDboId { get; set; }
+
+    public bool Public { get; set; }
   }
 }

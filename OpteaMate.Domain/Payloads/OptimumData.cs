@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace OpteaMate.Domain {
@@ -10,5 +11,6 @@ namespace OpteaMate.Domain {
     [Required] public string Roles { get; set; }
     public string OverrepresentationMatrix { get; set; }
     public string Maximum { get; set; }
+    public Guid? SeriesToken { get; set; }
   }
 }

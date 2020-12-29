@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using OpteaMate.Domain;
 using OpteaMate.Persistence;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -29,7 +30,7 @@ namespace OpteaMate.Web {
     public IActionResult GetOptima() {
       var response = new OptimaResponse();
 
-      var dbo = _context.Optima.ToList();
+      var dbo = _context.Optima.Where(x => x.Public).ToList();
       if (dbo.Count > 0) {
 
         response.Data = new List<OptimumResponse>();
@@ -53,7 +54,43 @@ namespace OpteaMate.Web {
       var response = CreateOptimumResponse(optimum);
       return Ok(response);
     }
-    
+
+    //GET "http://localhost:5000/api/optima/byseries?token=0000-abcd"
+    [HttpGet("bySeries")]
+    [ProducesResponseType(typeof(EventsResponse), StatusCodes.Status200OK)]
+    public IActionResult GetOptimaBySeriesToken(Guid token) {
+      var response = new OptimaResponse();
+
+      var dbo = _context.Optima.Where(x => x.Public || x.SeriesToken == token).ToList();
+      if (dbo.Count > 0) {
+
+        response.Data = new List<OptimumResponse>();
+
+        foreach (var optimum in dbo) {
+          response.Data.Add(CreateOptimumResponse(optimum));
+        }
+      }
+      return Ok(response);
+    }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(OptimumResponse), StatusCodes.Status200OK)]
+    public IActionResult PostOptimum(OptimumData data) {
+
+      var optDbo = new OptimumDbo();
+      optDbo.CopyFrom(data);
+
+      using (var dbContextTransaction = _context.Database.BeginTransaction()) {
+        _context.Optima.Add(optDbo);
+
+        _context.SaveChanges();
+        dbContextTransaction.Commit();
+      }
+
+      OptimumResponse optDto = CreateOptimumResponse(optDbo);
+      return CreatedAtAction(nameof(GetOptimum), new { optDbo.OptimumDboId }, optDto);
+    }
+
     private OptimumResponse CreateOptimumResponse(OptimumDbo dbo) {
       var response = new OptimumResponse { Id = dbo.OptimumDboId, Data = new OptimumData() };
       response.Data.CopyFrom(dbo);
