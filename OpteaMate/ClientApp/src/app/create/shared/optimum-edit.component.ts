@@ -7,7 +7,7 @@ import { IOptimum, Optimum } from '../../shared/models/optima.model'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogConfig } from '@angular/material/dialog'
 
 @Component({
-  selector: 'app-scheme-edit',
+  selector: 'app-optimum-edit',
   templateUrl: './optimum-edit.component.html'
 })
 
@@ -44,6 +44,8 @@ export class OptimumEditComponent implements OnInit {
     console.info('addRole')
 
     this.optimaMat[0].push(this.newRoleName)
+    this.optimaMax[this.newRoleName] = undefined
+
     // add a '*' as optimum for the new role for each optima
     this.optimaMat.slice(1, this.optimaMat.length).forEach(x => x.push('*'))
     console.info(this.optimaMat)

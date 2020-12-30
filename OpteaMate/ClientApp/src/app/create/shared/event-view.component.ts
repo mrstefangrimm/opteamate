@@ -80,6 +80,8 @@ export class EventViewComponent implements OnInit {
     const dialogConfig = new MatDialogConfig()
     dialogConfig.disableClose = false
     dialogConfig.autoFocus = true
+    dialogConfig.width = '80vw'
+    dialogConfig.maxHeight = '80vh'
     dialogConfig.data = {
       selectedOptimum: this.selectedOptimum,
       optima: this.optima,
