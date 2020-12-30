@@ -11,12 +11,22 @@ export class TocService {
 
   constructor(
     private readonly http: HttpClient,
-    @Inject('BASE_URL') private readonly baseUrl: string) {
+    @Inject('BASE_URL') private readonly baseUrl: string,
+    @Inject('PROD_MODE') private readonly isProduction: boolean) {
   }
 
   getTableOfContent(): Observable<TocResponse> {
-    let tocRequest = this.baseUrl + 'api/toc'
-    return this.http.get<TocResponse>(tocRequest)     
+
+    if (this.isProduction) {
+      let request = 'https://opteamate.dynv6.net/api/toc'
+      console.info(request)
+      return this.http.get<TocResponse>(request)
+    }
+    else {
+      let request = this.baseUrl + 'api/toc'
+      console.info(request)
+      return this.http.get<TocResponse>(request)
+    }
   }
 
 }
