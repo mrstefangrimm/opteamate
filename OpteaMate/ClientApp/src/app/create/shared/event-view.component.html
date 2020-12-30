@@ -76,6 +76,7 @@
   </div>
 
   <button type="reset"
+          id="btnCreate"
           [disabled]="newEventTitle == null || newEventTitle.length == 0 || newEventLocation == null || newEventLocation.length == 0 || !isFutureDate()"
           mat-raised-button
           color="primary"
