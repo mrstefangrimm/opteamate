@@ -7,8 +7,8 @@ import { DateAdapter } from '@angular/material/core'
 import { MatDialogConfig, MatDialog } from '@angular/material/dialog'
 import { EventViewComponentInput, EventViewComponentOutput } from './shared/event-view.component'
 import { EventEditComponent } from '../shared/components/event-edit.component'
-import { EventData, IEvent } from '../shared/models/events.model'
-import { IRegistrations, IRegistrationsInfo } from '../shared/models/registrations.model'
+import { EventData, Event, TransferableEvent } from '../shared/models/events.model'
+import { Registrations, RegistrationsInfo } from '../shared/models/registrations.model'
 import { EventResponse, EventsService } from '../shared/services/events.service'
 
 @Component({
@@ -198,14 +198,14 @@ class SeriesEventStats {
   hasSponsors: boolean
 }
 
-class SeriesEvent implements IEvent {
+class SeriesEvent implements TransferableEvent<EventData> {
 
   id: number
   data: EventData
   hrefs: { [key: string]: string }
-  registrations: IRegistrations
+  registrations: Registrations
 
-  constructor(other: IEvent, readonly stats: SeriesEventStats) {
+  constructor(other: TransferableEvent<EventData>, readonly stats: SeriesEventStats) {
     if (other == null) throw new Error('other')
     if (stats == null) throw new Error('stats')
 
@@ -215,7 +215,7 @@ class SeriesEvent implements IEvent {
     this.registrations = other.registrations
   }
 
-  fillStats(info: IRegistrationsInfo) {
+  fillStats(info: RegistrationsInfo) {
     this.stats.registrationsCount = info.data.numRegistrations
     this.stats.hasSponsors = info.data.hasSponsors
   }

@@ -12,7 +12,7 @@ describe('TocHttpService', () => {
 
 
   beforeEach(() => {
-    target = new TocService(httpClientSpy as any, 'http:/any/')
+    target = new TocService(httpClientSpy as any, 'http:/any/', false)
   })
 
   afterEach(() => {

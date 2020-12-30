@@ -3,7 +3,7 @@
 //
 import { Component, Inject, OnInit } from '@angular/core'
 import { OptimaSerivce } from '../../shared/services/optima.service'
-import { IOptimum, Optimum } from '../../shared/models/optima.model'
+import { Optimum } from '../../shared/models/optima.model'
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogConfig } from '@angular/material/dialog'
 
 @Component({
@@ -14,7 +14,7 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogConfig } from '@angular/materia
 export class OptimumEditComponent implements OnInit {
 
   currentOptimum: Optimum
-  optima: IOptimum[]
+  optima: Optimum[]
   optimaMat: string[][]
   optimaMax: { [role: string]: string }
   newRoleName: string

@@ -2,7 +2,7 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 
-import { Optimum, IOptimumData } from './optima.model'
+import { Optimum } from './optima.model'
 import { OptimumResponse } from '../services/optima.service'
 
 describe('Optimum', () => {

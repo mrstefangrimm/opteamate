@@ -11,22 +11,22 @@ export class RegistrationData {
   transientScratch: boolean
 }
 
-export interface IRegistration {
+export interface Registration {
   id: number
   data: RegistrationData
   hrefs: { [key: string]: string }
 }
 
-export interface IRegistrations {
-  data: IRegistration[]
+export interface Registrations {
+  data: Registration[]
   hrefs: { [key: string]: string }
 }
 
-export interface IRegistrationsInfoData {
+export interface RegistrationsInfoData {
   numRegistrations: number
   hasSponsors: boolean
 }
 
-export interface IRegistrationsInfo {
-  data: IRegistrationsInfoData
+export interface RegistrationsInfo {
+  data: RegistrationsInfoData
 }

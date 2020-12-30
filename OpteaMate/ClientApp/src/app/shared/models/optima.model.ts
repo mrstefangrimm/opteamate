@@ -2,7 +2,7 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 
-export interface IOptimumData {
+export interface OptimumData {
   name: string
   strategies: string
   roles: string
@@ -11,20 +11,19 @@ export interface IOptimumData {
   seriesToken: string
 }
 
-export interface IOptimum {
+export interface TransferableOptimum<TDATA> {
   id: number
-  data: IOptimumData
-  roles: string[]
+  data: TDATA
 }
 
-export class Optimum implements IOptimum {
+export class Optimum implements TransferableOptimum<OptimumData> {
 
   id: number
-  data: IOptimumData
+  data: OptimumData
   roles: string[]
   optima: string[]
 
-  constructor(other: IOptimum) {
+  constructor(other: TransferableOptimum<OptimumData>) {
     if (other == null) throw new Error('other')
 
     this.id = other.id

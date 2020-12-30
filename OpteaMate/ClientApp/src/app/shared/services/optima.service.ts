@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
 import { TocService } from './toc.service'
-import { IOptimumData } from '../models/optima.model'
+import { OptimumData, TransferableOptimum } from '../models/optima.model'
 
 @Injectable({ providedIn: 'root' })
 export class OptimaSerivce {
@@ -129,7 +129,7 @@ export class OptimaSerivce {
     })
   }
 
-  postOptimum(data: IOptimumData) {
+  postOptimum(data: OptimumData) {
 
     let postOptimumFromHref = (data, subscriber) => {
       let request = this.optimaHref
@@ -193,9 +193,9 @@ export class OptimaSerivce {
 
 // Data Transfer Objects, Data Payload Objects
 
-export interface OptimumResponse {
+export interface OptimumResponse extends TransferableOptimum<OptimumData> {
   id: number
-  data: IOptimumData
+  data: OptimumData
 }
 
 interface OptimaResponse {

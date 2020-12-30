@@ -4,7 +4,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core'
 import { DateAdapter } from '@angular/material/core'
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
-import { IOptimum, Optimum } from '../../shared/models/optima.model'
+import { Optimum } from '../../shared/models/optima.model'
 import { OptimaSerivce } from '../../shared/services/optima.service'
 import { OptimumEditComponent } from './optimum-edit.component'
 
@@ -18,11 +18,11 @@ export class EventViewComponent implements OnInit {
   @Input() config: EventViewComponentInput
   @Output() notify: EventEmitter<EventViewComponentOutput> = new EventEmitter<EventViewComponentOutput>();
 
-  optima: IOptimum[]
+  optima: Optimum[]
   newEventTitle: string
   newEventLocation: string
 
-  selectedOptimum: IOptimum
+  selectedOptimum: Optimum
   selectedDate: Date
   selectedHour: number
   selectedMinutes: number
