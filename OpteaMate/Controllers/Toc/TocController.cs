@@ -1,12 +1,13 @@
-﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
+﻿// Copyright (c) 2020-2021 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OpteaMate.Web.Toc.Domain;
-using RestBunch;
+using Collares;
 
 namespace OpteaMate.Web {
+  using TocResponse = WebApiInfoResponse<object>;
 
   [Route("api/[controller]")]
   [ApiController]

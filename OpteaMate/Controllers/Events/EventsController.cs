@@ -1,18 +1,21 @@
-﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
+﻿// Copyright (c) 2020-2021 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
+using Collares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpteaMate.Domain;
 using OpteaMate.Persistence;
-using RestBunch;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace OpteaMate.Web {
+  using EventsInfoResponse = WebApiInfoResponse<object>;
+  using EventsResponse = WebApiCollectionResponse<EventResponse, EventData>;
+  using RegistrationsInfoResponse = WebApiInfoResponse<RegistrationsInfoData>;
 
   [Route("api/[controller]")]
   [ApiController]
@@ -63,7 +66,7 @@ namespace OpteaMate.Web {
         if (evtsDbo.Count > 0) {
           // Do not load registration to reduce network traffic _context.Registrations.Load();
 
-          response.Data = new List<EventResponse>();
+          //response.Data = new List<EventResponse>();
 
           foreach (var evtDbo in evtsDbo) {
             response.Data.Add(CreateEventResponse(evtDbo));
@@ -88,7 +91,7 @@ namespace OpteaMate.Web {
       if (key == "event") { comp = a => a.EventToken == token; }
       else if (key == "series") { comp = a => a.SeriesToken == token; }
       if (comp != null) {
-        var response = new EventsResponse { Data = new List<EventResponse>() };
+        var response = new EventsResponse(); // { Data = new List<EventResponse>() };
 
         var matches = _context.Events.Where(comp);
         foreach (EventDbo evtDbo in matches) {
@@ -112,7 +115,7 @@ namespace OpteaMate.Web {
 
       var matches = _context.Events.Where(a => a.EventToken == token);
       if (matches.Any()) {
-        response.Data = new List<EventResponse>();
+        //response.Data = new List<EventResponse>();
         foreach (EventDbo evtDbo in matches) {
           var evtDto = CreateEventResponse(evtDbo);
           response.Data.Add(evtDto);
@@ -133,7 +136,7 @@ namespace OpteaMate.Web {
 
       var matches = _context.Events.Where(a => a.SeriesToken == token);
       if (matches.Any()) {
-        response.Data = new List<EventResponse>();
+        //response.Data = new List<EventResponse>();
 
         foreach (EventDbo evtDbo in matches) {
           var evtDto = CreateEventResponse(evtDbo);
@@ -157,7 +160,7 @@ namespace OpteaMate.Web {
       if (evtDbo == null) { return NotFound(); }
 
       var response = new RegistrationsInfoResponse() {
-        Data = new RegistrationsInfoData()
+        //Data = new RegistrationsInfoData()
       };
 
       var loadingTask = _context.Entry(evtDbo).Collection(e => e.Registrations).LoadAsync();
@@ -357,8 +360,8 @@ namespace OpteaMate.Web {
     private EventResponse CreateEventResponse(EventDbo dbo) {
       var response = new EventResponse() {
         Id = dbo.EventDboId,
-        Data = new EventData(),
-        Registrations = new RegistrationsResponse() { Data = new List<RegistrationResponse>() }
+        //Data = new EventData(),
+        //Registrations = RegistrationsResponse.Empty // new RegistrationsResponse() { Data = new List<RegistrationResponse>() }
       };
 
       response.Data.CopyFrom(dbo);
@@ -390,7 +393,10 @@ namespace OpteaMate.Web {
     }
 
     private RegistrationResponse CreateRegistrationResponse(RegistrationDbo dbo, bool canAddRegistrations, bool canPatchEvent) {
-      var response = new RegistrationResponse { Id = dbo.RegistrationDboId, Data = new RegistrationData() };
+      var response = new RegistrationResponse { 
+        Id = dbo.RegistrationDboId, 
+        //Data = new RegistrationData()
+      };
       response.Data.CopyFrom(dbo);
       // registrations from an event in the past nor from a locked event can be deleted or patched.
       if (canAddRegistrations && canPatchEvent) {

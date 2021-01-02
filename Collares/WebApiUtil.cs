@@ -1,11 +1,14 @@
 ﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
-namespace RestBunch {
+using Collares.Base;
+
+namespace Collares {
 
   public enum WebApiResponseType {
-    Payload,
-    Collection
+    Resource,
+    Collection,
+    Info
   }
 
   public enum GenericHrefType {
@@ -27,7 +30,7 @@ namespace RestBunch {
   }
 
   public static class WebApiUtil {
-    public static void AddHref<THREF>(this IWebApiResponse target, Val2Type<THREF> type, string value) {
+    public static void AddHref<THREF>(this WebApiResponse target, Val2Type<THREF> type, string value) {
       target.Hrefs.Add(type.ToString().ToLower(), value?.ToLower());
     }
   }

@@ -44,9 +44,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Collares\Collares.csproj" />
     <ProjectReference Include="..\OpteaMate.Domain\OpteaMate.Domain.csproj" />
     <ProjectReference Include="..\OpteaMate.Persistence\OpteaMate.Persistence.csproj" />
-    <ProjectReference Include="..\RestBunch\RestBunch.csproj" />
   </ItemGroup>
 
   <ItemGroup>
