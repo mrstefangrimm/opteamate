@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2021 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
+using System;
 
 namespace Collares.UnitTest.TestModel {
 
@@ -10,10 +11,12 @@ namespace Collares.UnitTest.TestModel {
   }
 
   class ShoppingList {
-    public string Owner { get; set; }
+    public string Shopper { get; set; }
+    public DateTime CreationTime { get; set; }
   }
 
   class ShoppingListItemsInfo {
+    public decimal TotalPrice { get; set; }
     public decimal AvgPrice { get; set; }
   }
 }

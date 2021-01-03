@@ -23,32 +23,37 @@ namespace Collares.UnitTest.Collection {
     [TestMethod]
     public void TestMethod1() {
 
-      var payload1 = new ShoppingItemResponse() {
+      const string hrefPost = "/api/shoppinglists/4/items";
+
+      var item1Response = new ShoppingItemResponse() {
         Id = 1
       };
-      payload1.Data.Product = "apples";
+      item1Response.Data.Product = "apples";
+      item1Response.Data.Price = 3.49m;
+      item1Response.AddHref(HrefType.Delete, hrefPost + "/1");
 
-      var payload2 = new ShoppingItemResponse() {
+      var item2Response = new ShoppingItemResponse() {
         Id = 2
       };
-      payload2.Data.Product = "pears";
-
+      item2Response.Data.Product = "pears";
+      item2Response.Data.Price = 2.99m;
+      item2Response.AddHref(HrefType.Delete, hrefPost + "/2");
 
       var resp1 = new ShoppingListItemsResponse();
-      resp1.Data.Add(payload1);
-      resp1.Data.Add(payload2);
-      resp1.AddHref(HrefType.POST, "/api/shoppinglists");
+      resp1.Data.Add(item1Response);
+      resp1.Data.Add(item2Response);
+      resp1.AddHref(HrefType.Post, hrefPost);
 
       var resp2 = new CollectionResponseNotRecommended();
       resp2.Data = new List<ShoppingItemResponse>();
-      resp2.Data.Add(payload1);
-      resp2.Data.Add(payload2);
-      resp2.AddHref(HrefType.POST, "/api/shoppinglists");
+      resp2.Data.Add(item1Response);
+      resp2.Data.Add(item2Response);
+      resp2.AddHref(HrefType.Post, hrefPost);
 
       var resp3 = new CollectionResponseTestWrong();
-      //resp3.Data.Add(payload1);
-      //resp3.Data.Add(payload2);
-      resp3.AddHref(HrefType.POST, "/api/shoppinglists/");
+      //resp3.Data.Add(item1);
+      //resp3.Data.Add(item2);
+      resp3.AddHref(HrefType.Post, hrefPost);
 
       string jsonResp1 = JsonSerializer.Serialize(resp1);
       string jsonResp2 = JsonSerializer.Serialize(resp2);
@@ -64,8 +69,8 @@ namespace Collares.UnitTest.Collection {
       Assert.AreEqual("pears", desResp1.Data.Last().Data.Product);
       Assert.AreEqual("pears", desResp2.Data.Last().Data.Product);
 
-      Assert.AreEqual("/api/shoppinglists", desResp1.Hrefs["post"]);
-      Assert.AreEqual("/api/shoppinglists", desResp2.Hrefs["post"]);
+      Assert.AreEqual(hrefPost, desResp1.Hrefs["post"]);
+      Assert.AreEqual(hrefPost, desResp2.Hrefs["post"]);
     }
   }
 }

@@ -5,28 +5,34 @@ using Collares.Base;
 
 namespace Collares {
 
-  public enum WebApiResponseType {
+  public enum PredefinedWebApiResponseType {
     Resource,
     Collection,
     Info
   }
 
+  public class WebApiResponseType {
+    public static Val2Type<PredefinedWebApiResponseType> Resource = new Val2Type<PredefinedWebApiResponseType>(PredefinedWebApiResponseType.Resource);
+    public static Val2Type<PredefinedWebApiResponseType> Collection = new Val2Type<PredefinedWebApiResponseType>(PredefinedWebApiResponseType.Collection);
+    public static Val2Type<PredefinedWebApiResponseType> Info = new Val2Type<PredefinedWebApiResponseType>(PredefinedWebApiResponseType.Info);
+  }
+
   public enum GenericHrefType {
-    SELF,
-    GET,
-    POST,
-    PUT,
-    PATCH,
-    DELETE
+    Self,
+    Get,
+    Post,
+    Put,
+    Patch,
+    Delete
   }
   
   public class HrefType {
-    public static Val2Type<GenericHrefType> SELF = new Val2Type<GenericHrefType>(GenericHrefType.SELF);
-    public static Val2Type<GenericHrefType> GET = new Val2Type<GenericHrefType>(GenericHrefType.GET);
-    public static Val2Type<GenericHrefType> POST = new Val2Type<GenericHrefType>(GenericHrefType.POST);
-    public static Val2Type<GenericHrefType> PUT = new Val2Type<GenericHrefType>(GenericHrefType.PUT);
-    public static Val2Type<GenericHrefType> PATCH = new Val2Type<GenericHrefType>(GenericHrefType.PATCH);
-    public static Val2Type<GenericHrefType> DELETE = new Val2Type<GenericHrefType>(GenericHrefType.DELETE);
+    public static Val2Type<GenericHrefType> Self = new Val2Type<GenericHrefType>(GenericHrefType.Self);
+    public static Val2Type<GenericHrefType> Get = new Val2Type<GenericHrefType>(GenericHrefType.Get);
+    public static Val2Type<GenericHrefType> Post = new Val2Type<GenericHrefType>(GenericHrefType.Post);
+    public static Val2Type<GenericHrefType> Put = new Val2Type<GenericHrefType>(GenericHrefType.Put);
+    public static Val2Type<GenericHrefType> Patch = new Val2Type<GenericHrefType>(GenericHrefType.Patch);
+    public static Val2Type<GenericHrefType> Delete = new Val2Type<GenericHrefType>(GenericHrefType.Delete);
   }
 
   public static class WebApiUtil {
