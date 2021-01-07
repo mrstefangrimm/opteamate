@@ -30,7 +30,7 @@
     <table>
       <thead>
         <tr>
-          <th>Rolle/Optimum</th>
+          <th style="text-align: left">Rolle/Optimum</th>
           <th *ngFor="let o of optimaMat.slice(1, optimaMat.length); index as oi">
             {{oi + 1}}
           </th>
@@ -40,13 +40,31 @@
                     (click)="addOptima()">
               <i class="material-icons">add</i>
             </button>
+            <button mat-icon-button
+                    color="standard"
+                    disabled="{{optimaMat.length <= 2}}"
+                    (click)="removeOptima()">
+              <i class="material-icons">remove</i>
+            </button>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let r of optimaMat[0]; index as ri">
           <td *ngFor="let o of optimaMat; index as oi">
-            <mat-form-field style="text-align: center"
+            <mat-form-field *ngIf="oi == 0"
+                            style="text-align: left"
+                            [style.maxwidth.px]=100>
+              <input matInput
+                     required
+                     name="item_{{oi}}{{ri}}"
+                     [(ngModel)]="optimaMat[oi][ri]"
+                     type="text" />
+              <mat-error>mindestens 1 Zeichen</mat-error>
+            </mat-form-field>
+
+            <mat-form-field *ngIf="oi > 0"
+                            style="text-align: center"
                             [style.width.px]=60>
               <input matInput
                      required
@@ -79,6 +97,13 @@
             color="standard"
             (click)="addRole()">
       <i class="material-icons">add</i>
+    </button>
+    <button mat-icon-button
+            type="reset"
+            color="standard"
+            disabled="{{optimaMat[0].length <= 1}}"
+            (click)="removeRole()">
+      <i class="material-icons">remove</i>
     </button>
   </form>
 </mat-expansion-panel>

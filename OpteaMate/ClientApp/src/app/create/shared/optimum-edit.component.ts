@@ -51,16 +51,32 @@ export class OptimumEditComponent implements OnInit {
     console.info(this.optimaMat)
   }
 
+  removeRole() {
+    console.info('removeRole')
+    if (this.optimaMat[0].length > 1) {
+      for (let n = 0; n < this.optimaMat.length; n++) {
+        this.optimaMat[n].pop()
+      }
+    }
+    console.info(this.optimaMat)
+  }
+
   addOptima() {
     console.info('addOptima')
-
-    console.info(this.optimaMat)
     // an array with the size of the number of current roles
     let optArr = new Array<string>(this.optimaMat[0].length)
     for (let n = 0; n < optArr.length; n++) {
       optArr[n] = '*'
     }
     this.optimaMat.push(optArr)
+    console.info(this.optimaMat)
+  }
+
+  removeOptima() {
+    console.info('removeOptima')
+    if (this.optimaMat.length > 2) {
+      this.optimaMat.pop()
+    }
     console.info(this.optimaMat)
   }
 

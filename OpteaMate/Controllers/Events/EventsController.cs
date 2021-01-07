@@ -358,11 +358,7 @@ namespace OpteaMate.Web {
     }
 
     private EventResponse CreateEventResponse(EventDbo dbo) {
-      var response = new EventResponse() {
-        Id = dbo.EventDboId,
-        //Data = new EventData(),
-        //Registrations = RegistrationsResponse.Empty // new RegistrationsResponse() { Data = new List<RegistrationResponse>() }
-      };
+      var response = new EventResponse() { Id = dbo.EventDboId };
 
       response.Data.CopyFrom(dbo);
       
@@ -393,10 +389,7 @@ namespace OpteaMate.Web {
     }
 
     private RegistrationResponse CreateRegistrationResponse(RegistrationDbo dbo, bool canAddRegistrations, bool canPatchEvent) {
-      var response = new RegistrationResponse { 
-        Id = dbo.RegistrationDboId, 
-        //Data = new RegistrationData()
-      };
+      var response = new RegistrationResponse { Id = dbo.RegistrationDboId };
       response.Data.CopyFrom(dbo);
       // registrations from an event in the past nor from a locked event can be deleted or patched.
       if (canAddRegistrations && canPatchEvent) {
