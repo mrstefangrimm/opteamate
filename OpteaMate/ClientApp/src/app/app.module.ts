@@ -28,13 +28,13 @@ import { RegistrationComponent } from './enroll/registration.component'
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     FormsModule,
     RouterModule.forRoot([
-      { path: '', component: HomeComponent, pathMatch: 'full' },
-      { path: 'series/:seriestoken', component: SeriesComponent },
-      { path: 'admin', component: AdminComponent },
-      { path: 'enroll/:eventtoken', component: RegistrationComponent },
-      { path: '404', component: NotfoundComponent },
-      { path: '**', redirectTo: '/404' }
-    ]),
+    { path: '', component: HomeComponent, pathMatch: 'full' },
+    { path: 'series/:seriestoken', component: SeriesComponent },
+    { path: 'admin', component: AdminComponent },
+    { path: 'enroll/:eventtoken', component: RegistrationComponent },
+    { path: '404', component: NotfoundComponent },
+    { path: '**', redirectTo: '/404' }
+], { relativeLinkResolution: 'legacy' }),
     BrowserAnimationsModule,
     SharedModule,
     CreateModule,
