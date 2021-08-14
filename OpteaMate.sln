@@ -11,10 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpteaMate.Persistence", "Op
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpteaMate.Domain", "OpteaMate.Domain\OpteaMate.Domain.csproj", "{BD55CB91-1ECB-4420-81E6-C49226FBF90E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Collares.UnitTest", "Collares.UnitTest\Collares.UnitTest.csproj", "{48CDDB33-02A3-4D00-BED9-116232FC0929}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Collares", "Collares\Collares.csproj", "{BA3AC9A4-EFCE-4A58-A8E1-CEC19FEC72A7}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,14 +33,6 @@ Global
 		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{48CDDB33-02A3-4D00-BED9-116232FC0929}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{48CDDB33-02A3-4D00-BED9-116232FC0929}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{48CDDB33-02A3-4D00-BED9-116232FC0929}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{48CDDB33-02A3-4D00-BED9-116232FC0929}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA3AC9A4-EFCE-4A58-A8E1-CEC19FEC72A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA3AC9A4-EFCE-4A58-A8E1-CEC19FEC72A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA3AC9A4-EFCE-4A58-A8E1-CEC19FEC72A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA3AC9A4-EFCE-4A58-A8E1-CEC19FEC72A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
