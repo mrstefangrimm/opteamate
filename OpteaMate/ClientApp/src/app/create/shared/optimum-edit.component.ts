@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Stefan Grimm. All rights reserved.
+// Copyright (c) 2020-2021 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 import { Component, Inject, OnInit } from '@angular/core'
@@ -17,6 +17,7 @@ export class OptimumEditComponent implements OnInit {
   optima: Optimum[]
   optimaMat: string[][]
   optimaMax: { [role: string]: string }
+  overrepMat: string[][]
   newRoleName: string
   seriesToken: string
 
@@ -38,6 +39,8 @@ export class OptimumEditComponent implements OnInit {
 
     this.optimaMax = this.currentOptimum.getMaximaAsDictonary()  
     console.info(this.optimaMax)
+
+    this.overrepMat = [[' ', 'a', 'b', 'c'], ['a', '1', '0', '0'], ['b', '0', '1', '0'], ['c', '0', '0', '1']]
   }
 
   addRole() {
