@@ -18,7 +18,7 @@ export class TocService {
   getTableOfContent(): Observable<TocResponse> {
 
     if (this.isProduction) {
-      let request = 'https://opteamate.dynv6.net/api/toc'
+      let request = 'https://webaepp.dynv6.net:50446/api/toc'
       console.info(request)
       return this.http.get<TocResponse>(request)
     }

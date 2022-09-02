@@ -4,7 +4,7 @@
 namespace OpteaMate.Web.Toc.Domain {
   public class TocService : ITocService {
     public string GetBaseUrl() {
-      return "https://opteamate.dynv6.net";
+      return "https://webaepp.dynv6.net:50446";
     }
   }
 }
