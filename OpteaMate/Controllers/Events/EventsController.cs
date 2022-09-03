@@ -1,18 +1,21 @@
-﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
+﻿// Copyright (c) 2020-2021 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
+using Collares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpteaMate.Domain;
 using OpteaMate.Persistence;
-using RestBunch;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace OpteaMate.Web {
+  using EventsInfoResponse = WebApiInfoResponse<object>;
+  using EventsResponse = WebApiCollectionResponse<EventResponse, EventData>;
+  using RegistrationsInfoResponse = WebApiInfoResponse<RegistrationsInfoData>;
 
   [Route("api/[controller]")]
   [ApiController]
@@ -43,7 +46,7 @@ namespace OpteaMate.Web {
       var response = new EventsInfoResponse();
 
       // PostEvent
-      response.AddHref(HrefType.POST, "api/events");
+      response.AddHref(HrefType.Post, "api/events");
       return Ok(response);
     }
 
@@ -63,14 +66,14 @@ namespace OpteaMate.Web {
         if (evtsDbo.Count > 0) {
           // Do not load registration to reduce network traffic _context.Registrations.Load();
 
-          response.Data = new List<EventResponse>();
+          //response.Data = new List<EventResponse>();
 
           foreach (var evtDbo in evtsDbo) {
             response.Data.Add(CreateEventResponse(evtDbo));
           }
         }
         // PostEvent
-        response.AddHref(HrefType.POST, "api/events");
+        response.AddHref(HrefType.Post, "api/events");
 
         return Ok(response);
       }
@@ -88,7 +91,7 @@ namespace OpteaMate.Web {
       if (key == "event") { comp = a => a.EventToken == token; }
       else if (key == "series") { comp = a => a.SeriesToken == token; }
       if (comp != null) {
-        var response = new EventsResponse { Data = new List<EventResponse>() };
+        var response = new EventsResponse(); // { Data = new List<EventResponse>() };
 
         var matches = _context.Events.Where(comp);
         foreach (EventDbo evtDbo in matches) {
@@ -97,7 +100,7 @@ namespace OpteaMate.Web {
         }
 
         // PostEvent
-        response.AddHref(HrefType.POST, "api/events");
+        response.AddHref(HrefType.Post, "api/events");
 
         return Ok(response);
       }
@@ -112,7 +115,7 @@ namespace OpteaMate.Web {
 
       var matches = _context.Events.Where(a => a.EventToken == token);
       if (matches.Any()) {
-        response.Data = new List<EventResponse>();
+        //response.Data = new List<EventResponse>();
         foreach (EventDbo evtDbo in matches) {
           var evtDto = CreateEventResponse(evtDbo);
           response.Data.Add(evtDto);
@@ -120,7 +123,7 @@ namespace OpteaMate.Web {
       }
 
       // PostEvent
-      response.AddHref(HrefType.POST, "api/events");
+      response.AddHref(HrefType.Post, "api/events");
 
       return Ok(response);
     }
@@ -133,7 +136,7 @@ namespace OpteaMate.Web {
 
       var matches = _context.Events.Where(a => a.SeriesToken == token);
       if (matches.Any()) {
-        response.Data = new List<EventResponse>();
+        //response.Data = new List<EventResponse>();
 
         foreach (EventDbo evtDbo in matches) {
           var evtDto = CreateEventResponse(evtDbo);
@@ -142,7 +145,7 @@ namespace OpteaMate.Web {
       }
 
       // PostEvent
-      response.AddHref(HrefType.POST, "api/events");
+      response.AddHref(HrefType.Post, "api/events");
 
       return Ok(response);
     }
@@ -157,7 +160,7 @@ namespace OpteaMate.Web {
       if (evtDbo == null) { return NotFound(); }
 
       var response = new RegistrationsInfoResponse() {
-        Data = new RegistrationsInfoData()
+        //Data = new RegistrationsInfoData()
       };
 
       var loadingTask = _context.Entry(evtDbo).Collection(e => e.Registrations).LoadAsync();
@@ -165,7 +168,7 @@ namespace OpteaMate.Web {
       bool mutable = evtDbo.Deadline.HasValue ? evtDbo.Deadline > DateTime.Now.ToUniversalTime() : evtDbo.Start > DateTime.Now.ToUniversalTime();
       if (mutable) {
         // PostEventRegistration
-        response.AddHref(HrefType.POST, $"api/events/{id}/registrations");
+        response.AddHref(HrefType.Post, $"api/events/{id}/registrations");
       }
 
       await loadingTask;
@@ -355,11 +358,7 @@ namespace OpteaMate.Web {
     }
 
     private EventResponse CreateEventResponse(EventDbo dbo) {
-      var response = new EventResponse() {
-        Id = dbo.EventDboId,
-        Data = new EventData(),
-        Registrations = new RegistrationsResponse() { Data = new List<RegistrationResponse>() }
-      };
+      var response = new EventResponse() { Id = dbo.EventDboId };
 
       response.Data.CopyFrom(dbo);
       
@@ -371,31 +370,31 @@ namespace OpteaMate.Web {
         }
       }
 
-      response.AddHref(HrefType.SELF, "enroll/" + dbo.EventToken);
+      response.AddHref(HrefType.Self, "enroll/" + dbo.EventToken);
       if (dbo.SeriesToken.HasValue && dbo.SeriesToken != Guid.Empty) {
         response.AddHref(OpteaMateHrefType.BACK, "series/" + dbo.SeriesToken);
       }
       // DeleteEvent; also possible to delete past events
-      response.AddHref(HrefType.DELETE, $"api/events/{dbo.EventDboId}");
+      response.AddHref(HrefType.Delete, $"api/events/{dbo.EventDboId}");
 
       if (canAddRegistrations) {
         // PostEventRegistration
-        response.Registrations.AddHref(HrefType.POST, $"api/events/{dbo.EventDboId}/registrations");
+        response.Registrations.AddHref(HrefType.Post, $"api/events/{dbo.EventDboId}/registrations");
       }
       if (canPatchEvent) {
         // PatchEvent
-        response.AddHref(HrefType.PATCH, $"api/events/{dbo.EventDboId}");
+        response.AddHref(HrefType.Patch, $"api/events/{dbo.EventDboId}");
       }
       return response;
     }
 
     private RegistrationResponse CreateRegistrationResponse(RegistrationDbo dbo, bool canAddRegistrations, bool canPatchEvent) {
-      var response = new RegistrationResponse { Id = dbo.RegistrationDboId, Data = new RegistrationData() };
+      var response = new RegistrationResponse { Id = dbo.RegistrationDboId };
       response.Data.CopyFrom(dbo);
       // registrations from an event in the past nor from a locked event can be deleted or patched.
       if (canAddRegistrations && canPatchEvent) {
-        response.AddHref(HrefType.DELETE, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
-        response.AddHref(HrefType.PATCH, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
+        response.AddHref(HrefType.Delete, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
+        response.AddHref(HrefType.Patch, $"api/events/{dbo.EventDboId}/registrations/{dbo.RegistrationDboId}");
       }      
       return response;
     }

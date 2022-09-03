@@ -10,7 +10,6 @@ import { of } from 'rxjs'
 import { TocResponse, TocService } from '../shared/services/toc.service'
 import { HomeComponent } from './home.component'
 import { EventViewComponentOutput } from './shared/event-view.component'
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 describe('HomeComponent', () => {
   let component: HomeComponent
@@ -19,7 +18,6 @@ describe('HomeComponent', () => {
   const dateAdapterSpy = jasmine.createSpyObj('DateAdapter<Date>', ['setLocale'])
   const httpClientSpy = jasmine.createSpyObj('HttpClient', ['get', 'post'])
   const tocServiceSpy = jasmine.createSpyObj('TocService', ['getTableOfContent'])
-  const eventsServiceSpy = jasmine.createSpyObj('EventsService', ['getInfo', 'postEvent'])
 
   beforeEach(() => {
     TestBed.configureTestingModule({

@@ -3,8 +3,10 @@
 //
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core'
 import { DateAdapter } from '@angular/material/core'
-import { IOptimum, Optimum } from '../../shared/models/optima.model'
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
+import { Optimum } from '../../shared/models/optima.model'
 import { OptimaSerivce } from '../../shared/services/optima.service'
+import { OptimumEditComponent } from './optimum-edit.component'
 
 @Component({
   selector: 'app-event-view',
@@ -16,11 +18,11 @@ export class EventViewComponent implements OnInit {
   @Input() config: EventViewComponentInput
   @Output() notify: EventEmitter<EventViewComponentOutput> = new EventEmitter<EventViewComponentOutput>();
 
-  optima: IOptimum[]
+  optima: Optimum[]
   newEventTitle: string
   newEventLocation: string
 
-  selectedOptimum: IOptimum
+  selectedOptimum: Optimum
   selectedDate: Date
   selectedHour: number
   selectedMinutes: number
@@ -28,12 +30,14 @@ export class EventViewComponent implements OnInit {
 
   constructor(
     private dateAdapter: DateAdapter<Date>,
+    private dialog: MatDialog,
     private optimaService: OptimaSerivce) {
   }
 
   ngOnInit() {
     this.dateAdapter.setLocale('de')
 
+    console.info('ngOnInit')
     this.optimaService.getOptima()
       .subscribe(result => {
         console.log(result)
@@ -53,7 +57,8 @@ export class EventViewComponent implements OnInit {
   }
 
   addEvent() {
-    var start = this.selectedDate
+    console.info('addEvent')
+    let start = this.selectedDate
     start.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
 
     let evtArgs = Object.assign(new EventViewComponentOutput(), {
@@ -69,6 +74,32 @@ export class EventViewComponent implements OnInit {
     setTimeout(() => this.setInitialDateTime())
   }
 
+  addScheme() {
+    console.info('addScheme')
+
+    const dialogConfig = new MatDialogConfig()
+    dialogConfig.disableClose = false
+    dialogConfig.autoFocus = true
+    dialogConfig.width = '80vw'
+    dialogConfig.maxHeight = '80vh'
+    dialogConfig.data = {
+      selectedOptimum: this.selectedOptimum,
+      optima: this.optima,
+      seriesToken: this.config.seriesToken
+    }     
+
+    console.info(dialogConfig.data)
+    const dialogRef = this.dialog.open(OptimumEditComponent, dialogConfig)
+    dialogRef.afterClosed().subscribe(
+      data => {
+        if (data != null) {
+          console.info(data.data)
+          this.selectedOptimum = this.optima.find(x => x.id == data.data)
+        }
+      })
+  }
+
+
   setInitialDateTime() {
     let currentDate = new Date()
     this.selectedHour = currentDate.getMinutes() > 30 ? currentDate.getHours() + 1 : currentDate.getHours()
@@ -80,7 +111,7 @@ export class EventViewComponent implements OnInit {
   isFutureDate() {
     if (this.selectedDate == null) return false
 
-    var selected = this.selectedDate
+    let selected = this.selectedDate
     selected.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
 
     let inFuture = +selected - +new Date() > 1 * 60 * 60 * 1000
@@ -91,6 +122,7 @@ export class EventViewComponent implements OnInit {
 export class EventViewComponentInput {
   title: string
   buttonText: string
+  seriesToken: string
 }
 
 export class EventViewComponentOutput {

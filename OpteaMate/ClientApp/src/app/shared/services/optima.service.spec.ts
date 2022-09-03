@@ -116,7 +116,7 @@ describe('OptimaHttpService', () => {
     tocServiceSpy.getTableOfContent.and.returnValue(of(givenTocResponse))
 
     const givenOptimumResponse: OptimumResponse = {
-      id: 12, data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, roles: 'A;B', strategies: '*-*' }
+      id: 12, data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, roles: 'A;B', strategies: '*-*', seriesToken: null }
     }
     httpClientSpy.get.and.returnValue(of(givenOptimumResponse))
 
@@ -138,7 +138,7 @@ describe('OptimaHttpService', () => {
     tocServiceSpy.getTableOfContent.and.returnValue(of(givenTocResponse))
 
     const givenOptimumResponse: OptimumResponse = {
-      id: 12, data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, roles: 'A;B', strategies: '*-*' }
+      id: 12, data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, roles: 'A;B', strategies: '*-*', seriesToken: null }
     }
     httpClientSpy.get.and.returnValue(of(givenOptimumResponse))
 
@@ -158,7 +158,7 @@ describe('OptimaHttpService', () => {
     tocServiceSpy.getTableOfContent.and.returnValue(of(givenTocResponse))
 
     const givenOptimumResponse: OptimumResponse = {
-      id: 12, data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, roles: 'A;B', strategies: '*-*' }
+      id: 12, data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, roles: 'A;B', strategies: '*-*', seriesToken: null }
     }
     httpClientSpy.get.and.returnValue(of(givenOptimumResponse))
 
@@ -178,7 +178,7 @@ describe('OptimaHttpService', () => {
     tocServiceSpy.getTableOfContent.and.returnValue(of(givenTocResponse))
 
     const givenOptimumResponse: OptimumResponse = {
-      id: 12, data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, roles: 'A;B', strategies: '*-*' }
+      id: 12, data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, roles: 'A;B', strategies: '*-*', seriesToken: null }
     }
     httpClientSpy.get.and.returnValue(of(givenOptimumResponse))
 
@@ -205,6 +205,6 @@ describe('OptimaHttpService', () => {
 function createOptimaResponse(): OptimumResponse {
   return {
     id: 45,
-    data: { name: 'any', maximum: null, overrepresentationMatrix: null, strategies: '*-*', roles: 'A;B' }
+    data: { name: 'any', maximum: null, overrepresentationMatrix: null, strategies: '*-*', roles: 'A;B', seriesToken: null }
   }
 }

@@ -6,20 +6,27 @@ import { HttpClient } from '@angular/common/http'
 import { Inject, Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
 
-@Injectable({
-  providedIn: 'root'
-})
-
+@Injectable({ providedIn: 'root' })
 export class TocService {
 
   constructor(
     private readonly http: HttpClient,
-    @Inject('BASE_URL') private readonly baseUrl: string) {
+    @Inject('BASE_URL') private readonly baseUrl: string,
+    @Inject('PROD_MODE') private readonly isProduction: boolean) {
   }
 
   getTableOfContent(): Observable<TocResponse> {
-    let tocRequest = this.baseUrl + 'api/toc'
-    return this.http.get<TocResponse>(tocRequest)     
+
+    if (this.isProduction) {
+      let request = 'https://webaepp.dynv6.net:50446/api/toc'
+      console.info(request)
+      return this.http.get<TocResponse>(request)
+    }
+    else {
+      let request = this.baseUrl + 'api/toc'
+      console.info(request)
+      return this.http.get<TocResponse>(request)
+    }
   }
 
 }

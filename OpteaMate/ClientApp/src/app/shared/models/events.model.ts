@@ -2,8 +2,8 @@
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
 
-import { IOptimum } from './optima.model'
-import { IRegistrations } from './registrations.model'
+import { Optimum } from './optima.model'
+import { Registrations } from './registrations.model'
 
 export class OptimumStatData {
   nextOptimum: number
@@ -20,21 +20,30 @@ export class EventStats {
   prevOptima: { [role: string]: number } = {}
 }
 
-export interface IEvent {
-  id: number
-  data: EventData
-  hrefs: { [key: string]: string }
-  registrations: IRegistrations
+export class EventData {
+  eventToken: string
+  title: string
+  location: string
+  start: Date
+  optimumId: number
+  seriesToken: string
 }
 
-export class Event implements IEvent {
+export interface TransferableEvent<TDATA> {
+  id: number
+  data: TDATA
+  hrefs: { [key: string]: string }
+  registrations: Registrations
+}
+
+export class Event implements TransferableEvent<EventData> {
 
   id: number
   data: EventData
   hrefs: { [key: string]: string }
-  registrations: IRegistrations
+  registrations: Registrations
 
-  constructor(other: IEvent, readonly stats: EventStats) {
+  constructor(other: TransferableEvent<EventData>, readonly stats: EventStats) {
     if (other == null) throw new Error('other')
     if (stats == null) throw new Error('stats')
 
@@ -46,7 +55,7 @@ export class Event implements IEvent {
     this.stats.totNumRegistrations = other.registrations.data.length
   }
 
-  fillStats(optimum: IOptimum) {
+  fillStats(optimum: Optimum) {
 
     let stratStr = optimum.data.strategies
     let strategies = stratStr.split(';')
@@ -104,7 +113,7 @@ export class Event implements IEvent {
           let overrepStr = optimum.data.overrepresentationMatrix
           let overrepRows = overrepStr.split(';')
 
-          var overrepMat: Array<Float32Array> = new Array<Float32Array>();
+          let overrepMat: Array<Float32Array> = new Array<Float32Array>()
           for (let n = 0; n < optimum.roles.length; n++) {
             let overrepCols = overrepRows[n].split(',')
             let fa = new Float32Array(3)
@@ -115,7 +124,7 @@ export class Event implements IEvent {
           }
           console.log(overrepMat)
 
-          var overrepVec: Float32Array = new Float32Array(optimum.roles.length)
+          let overrepVec: Float32Array = new Float32Array(optimum.roles.length)
           for (let n = 0; n < optimum.roles.length; n++) {
             overrepVec[n] = 0
             for (let m = 0; m < optimum.roles.length; m++) {
@@ -157,7 +166,7 @@ export class Event implements IEvent {
         }
 
         // Check for a minimal number of registrations
-        var someMissing = false
+        let someMissing = false
         optimum.roles.forEach(pos => {
           let statData = this.stats.theOptima[pos]
           if (statData.missing > 0) {
@@ -203,11 +212,3 @@ export class Event implements IEvent {
 
 }
 
-export class EventData {
-  eventToken: string
-  title: string
-  location: string
-  start: Date
-  optimumId: number
-  seriesToken: string
-}

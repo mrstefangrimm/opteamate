@@ -6,12 +6,9 @@ import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
 import { TocService } from './toc.service'
-import { IOptimumData } from '../models/optima.model'
+import { OptimumData, TransferableOptimum } from '../models/optima.model'
 
-@Injectable({
-  providedIn: 'root'
-})
-
+@Injectable({ providedIn: 'root' })
 export class OptimaSerivce {
 
   private optimaHref: string
@@ -34,7 +31,6 @@ export class OptimaSerivce {
             subscriber.error()
           })
     }
-
     return new Observable<OptimaResponse>(subscriber => {
       if (this.optimaHref === undefined) {
         this.updateOptimaHrefFromToc().subscribe(
@@ -58,6 +54,44 @@ export class OptimaSerivce {
     })
   } 
 
+  getOptimaForSeries(token: string): Observable<OptimaResponse> {
+
+    let getOptimaFromHref = subscriber => {
+      let request = this.optimaHref + 'byseries?token=' + token
+      console.info(request)
+      this.http.get<OptimaResponse>(request)
+        .subscribe(
+          result => {
+            subscriber.next(result)
+          },
+          error => {
+            console.error(error)
+            subscriber.error()
+          })
+    }
+    return new Observable<OptimaResponse>(subscriber => {
+      if (this.optimaHref === undefined) {
+        this.updateOptimaHrefFromToc().subscribe(
+          result => {
+            if (result != undefined) {
+              getOptimaFromHref(subscriber)
+            }
+            else {
+              console.error('HREF for optima is undefined.')
+              subscriber.error()
+            }
+          },
+          error => {
+            console.error(error)
+            subscriber.error()
+          })
+      }
+      else {
+        getOptimaFromHref(subscriber)
+      }
+    })
+  } 
+
   getOptimum(id: number): Observable<OptimumResponse> {
 
     let getOptimumFromHref = (id, subscriber) => {
@@ -72,7 +106,6 @@ export class OptimaSerivce {
           subscriber.error()
         })
     }
-
     return new Observable<OptimumResponse>(subscriber => {
       if (this.optimaHref === undefined) {
         this.updateOptimaHrefFromToc().subscribe(
@@ -92,6 +125,45 @@ export class OptimaSerivce {
       }
       else {
         getOptimumFromHref(id, subscriber)
+      }
+    })
+  }
+
+  postOptimum(data: OptimumData) {
+
+    let postOptimumFromHref = (data, subscriber) => {
+      let request = this.optimaHref
+      console.info(request)
+      this.http.post<OptimumResponse>(request, data).
+        subscribe(
+          result => {
+            subscriber.next(result)
+          },
+          error => {
+            console.error(error)
+            subscriber.error()
+          })
+    }
+
+    return new Observable<OptimumResponse>(subscriber => {
+      if (this.optimaHref === undefined) {
+        this.updateOptimaHrefFromToc().subscribe(
+          result => {
+            if (result != undefined) {
+              postOptimumFromHref(data, subscriber)
+            }
+            else {
+              console.error('HREF for optima is undefined.')
+              subscriber.error()
+            }
+          },
+          error => {
+            console.error(error)
+            subscriber.error()
+          })
+      }
+      else {
+        postOptimumFromHref(data, subscriber)
       }
     })
   }
@@ -121,9 +193,9 @@ export class OptimaSerivce {
 
 // Data Transfer Objects, Data Payload Objects
 
-export interface OptimumResponse {
+export interface OptimumResponse extends TransferableOptimum<OptimumData> {
   id: number
-  data: IOptimumData
+  data: OptimumData
 }
 
 interface OptimaResponse {

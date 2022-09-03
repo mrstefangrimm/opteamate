@@ -1,7 +1,7 @@
-﻿// Copyright (c) 2020 Stefan Grimm. All rights reserved.
+﻿// Copyright (c) 2020-2021 Stefan Grimm. All rights reserved.
 // Licensed under the GPL. See LICENSE file in the project root for full license information.
 //
-using RestBunch;
+using Collares;
 
 namespace OpteaMate.Web {
 

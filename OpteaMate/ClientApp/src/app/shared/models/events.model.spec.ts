@@ -6,7 +6,7 @@ import { EventResponse } from '../services/events.service'
 import { OptimumResponse } from '../services/optima.service'
 import { Event, EventData, EventStats } from './events.model'
 import { Optimum } from './optima.model'
-import { IRegistration, RegistrationData } from './registrations.model'
+import { Registration, RegistrationData } from './registrations.model'
 
 describe('Event', () => {
 
@@ -33,7 +33,8 @@ describe('Event', () => {
 
     givenOptimumFromHttp = {
       id: 1,
-      data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, strategies: '1-1', roles: 'A;B' }    }
+      data: { name: 'any', maximum: '100-100', overrepresentationMatrix: null, strategies: '1-1', roles: 'A;B', seriesToken: null }
+    }
   })
 
   afterEach(() => {
@@ -179,7 +180,7 @@ describe('Event', () => {
 
 })
 
-function createRegistration(role: string): IRegistration {
+function createRegistration(role: string): Registration {
 
   let data: RegistrationData = {
     name: 'any',

@@ -6,14 +6,11 @@ import { HttpClient } from '@angular/common/http'
 import { Injectable } from '@angular/core'
 import { Observable } from 'rxjs'
 import { TocService } from './toc.service'
-import { EventData, IEvent } from '../models/events.model'
-import { IRegistration, RegistrationData, IRegistrations, IRegistrationsInfo } from '../models/registrations.model'
+import { EventData, TransferableEvent } from '../models/events.model'
+import { Registration, RegistrationData, Registrations, RegistrationsInfo } from '../models/registrations.model'
 
-@Injectable({
-  providedIn: 'root'
-})
-
-export class EventsSerivce {
+@Injectable({ providedIn: 'root' })
+export class EventsService {
 
   private eventsHref: string
 
@@ -492,16 +489,16 @@ export class EventsSerivce {
 
 // Data Transfer Objects, Data Payload Objects
 
-export interface RegistrationsInfoResponse extends IRegistrationsInfo {
+export interface RegistrationsInfoResponse extends RegistrationsInfo {
 }
 
-export interface EventResponse extends IEvent {
+export interface EventResponse extends TransferableEvent<EventData> {
 }
 
-export interface RegistrationsResponse extends IRegistrations {
+export interface RegistrationsResponse extends Registrations {
 }
 
-export interface RegistrationResponse extends IRegistration {
+export interface RegistrationResponse extends Registration {
 }
 
 interface EventsInfoResponse {

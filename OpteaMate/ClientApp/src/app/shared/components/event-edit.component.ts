@@ -38,7 +38,7 @@ export class EventEditComponent implements OnInit {
   }
 
   apply() {
-    var start = this.selectedDate
+    let start = this.selectedDate
     start.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
 
     const dialogConfig = new MatDialogConfig()
@@ -70,7 +70,7 @@ export class EventEditComponent implements OnInit {
   isFutureDate() {
     if (this.selectedDate == null) return false
 
-    var selected = this.selectedDate
+    let selected = this.selectedDate
     selected.setHours(this.selectedHour, this.selectedMinutes, 0, 0)
 
     let inFuture = +selected - +new Date() > 1 * 60 * 60 * 1000

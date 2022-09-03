@@ -14,7 +14,6 @@ namespace OpteaMate.Web {
 
   public class Startup {
 
-    readonly string LocalhostOrigins = "LocalhostOrigins";
     private readonly IWebHostEnvironment _env;
 
     public Startup(IConfiguration configuration, IWebHostEnvironment env) {
@@ -25,17 +24,7 @@ namespace OpteaMate.Web {
     public IConfiguration Configuration { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services) {
-
-      services.AddCors(options => {
-        options.AddPolicy(name: LocalhostOrigins,
-                          builder => {
-                            builder.WithOrigins(
-                              "http://localhost:4700");
-                          });
-
-      });
-
+    public void ConfigureServices(IServiceCollection services) {   
       services.AddDbContext<OpteaMateContext>(opt => opt.UseSqlite("DefaultConnection"));
 
       if (_env.IsDevelopment()) {
@@ -54,8 +43,8 @@ namespace OpteaMate.Web {
             document.Info.Description = "Schedule your team events.";
             document.Info.Contact = new NSwag.OpenApiContact {
               Name = "Stefan Grimm",
-              Email = "stefangrimm@hotmail.com",
-              Url = string.Empty // "https://twitter.com/potus"
+              Email = "webaepp@outlook.com",
+              Url = string.Empty
             };
             document.Info.License = new NSwag.OpenApiLicense {
               Name = "Use under CC BY-NC-ND 4.0",
@@ -74,7 +63,7 @@ namespace OpteaMate.Web {
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
-      
+
       if (env.IsDevelopment()) {
         app.UseDeveloperExceptionPage();
       }
@@ -90,9 +79,20 @@ namespace OpteaMate.Web {
         app.UseSpaStaticFiles();
       }
 
-      app.UseRouting();
+      //// CORS, e.g. UseCors before UseRouting: https://stackoverflow.com/questions/44379560/how-to-enable-cors-in-asp-net-core-webapi
+      //app.UseCors(
+      //  options => options.WithOrigins("https://opteamate.github.io").AllowAnyMethod().AllowAnyHeader()
+      // );
+      //app.UseCors(
+      //  options => options.WithOrigins("http://localhost:4200").AllowAnyMethod().AllowAnyHeader()
+      // );
+      // CORS, e.g. UseCors before UseRouting: https://stackoverflow.com/questions/44379560/how-to-enable-cors-in-asp-net-core-webapi
+      var cors = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("AppSettings")["CORS"];
+      app.UseCors(
+        options => options.WithOrigins(cors).AllowAnyMethod().AllowAnyHeader()
+       );
 
-      app.UseCors(LocalhostOrigins);
+      app.UseRouting();
 
       app.UseEndpoints(endpoints => {
         endpoints.MapControllerRoute(

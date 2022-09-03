@@ -1,0 +1,204 @@
+<!-- Copyright (c) 2020-2021 Stefan Grimm. All rights reserved.
+     Licensed under the GPL. See LICENSE file in the project root for full license information.
+-->
+
+<style>
+  .divScroll {
+    overflow: scroll;
+    width: 60vw;
+    max-height: 40vh
+  }
+</style>
+
+<mat-form-field class="example-full-width">
+  <mat-label>Name</mat-label>
+  <input required
+         minlength="2"
+         matInput
+         name="name"
+         [ngModel]="currentOptimum.data.name"
+         type="text" />
+  <mat-error>Name, mindestens 2 Zeichen</mat-error>
+</mat-form-field>
+
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>Optima</mat-panel-title>
+    <mat-panel-description>Optimale Anzahl Teilnehmer pro Rolle</mat-panel-description>
+  </mat-expansion-panel-header>
+  <div class="divScroll">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left">Rolle/Optimum</th>
+          <th *ngFor="let o of optimaMat.slice(1, optimaMat.length); index as oi">
+            {{oi + 1}}
+          </th>
+          <th>
+            <button mat-icon-button
+                    color="standard"
+                    (click)="addOptima()">
+              <i class="material-icons">add</i>
+            </button>
+            <button mat-icon-button
+                    color="standard"
+                    disabled="{{optimaMat.length <= 2}}"
+                    (click)="removeOptima()">
+              <i class="material-icons">remove</i>
+            </button>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of optimaMat[0]; index as ri">
+          <td *ngFor="let o of optimaMat; index as oi">
+            <mat-form-field *ngIf="oi == 0"
+                            style="text-align: left"
+                            [style.maxwidth.px]=80>
+              <input matInput
+                     minlength="2"
+                     required
+                     name="item_{{oi}}{{ri}}"
+                     [ngModel]="optimaMat[oi][ri]" />
+              <mat-error>mindestens 2 Zeichen</mat-error>
+            </mat-form-field>
+
+            <mat-form-field *ngIf="oi > 0"
+                            style="text-align: center"
+                            [style.width.px]=60>
+              <input matInput
+                     required
+                     pattern="^([0-9]|[1-9][0-9]|[1-9][0-9][0-9])$|\*"
+                     name="item_{{oi}}{{ri}}"
+                     [ngModel]="optimaMat[oi][ri]" />
+              <mat-error>Zahl zwischen 0 und 999 oder *</mat-error>
+            </mat-form-field>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <form>
+    <mat-form-field class="example-full-width">
+      <mat-label>Rolle</mat-label>
+      <input required
+             minlength="2"
+             matInput
+             name="role"
+             [ngModel]="newRoleName"
+             class="form-control" />
+      <mat-error>Rolle, mindestens 2 Zeichen</mat-error>
+    </mat-form-field>
+    <button mat-icon-button
+            disabled="{{newRoleName && newRoleName.length < 2}}"
+            type="reset"
+            color="standard"
+            (click)="addRole()">
+      <i class="material-icons">add</i>
+    </button>
+    <button mat-icon-button
+            type="reset"
+            color="standard"
+            disabled="{{optimaMat[0].length <= 1}}"
+            (click)="removeRole()">
+      <i class="material-icons">remove</i>
+    </button>
+  </form>
+</mat-expansion-panel>
+
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Maxima
+    </mat-panel-title>
+    <mat-panel-description>
+      Maximale Anzahl Teilnehmer (optional)
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rolle</th>
+        <th>Maximum</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let x of optimaMax | keyvalue">
+        <td>{{x.key}}</td>
+        <td>
+          <mat-form-field class="example-full-width">
+            <input matInput
+                   pattern="^([0-9]|[1-9][0-9]|[1-9][0-9][0-9])$"
+                   name="max_{{x.key}}"
+                   [ngModel]="optimaMax[x.key]"
+                   type="text" />
+            <mat-error>Zahl zwischen 0 und 999</mat-error>
+          </mat-form-field>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</mat-expansion-panel>
+
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>&Uuml;berrep.</mat-panel-title>
+    <mat-panel-description>Numerisches Verh&auml;ltnis zwischen Rollen (optional)</mat-panel-description>
+  </mat-expansion-panel-header>
+  <div class="divScroll">
+    <table>
+      <tbody>
+        <tr *ngFor="let row of overrepMat[0]; index as rowi">
+          <td *ngFor="let col of overrepMat; index as coli">
+
+            <input matInput
+                   readonly
+                   *ngIf="(coli == 0 && rowi > 0)"
+                   style="text-align: left" />
+            {{overrepMat[coli][rowi]}}
+
+            <input matInput
+                   readonly
+                   *ngIf="(rowi == 0 && coli > 0)"
+                   style="text-align: center" />
+            {{overrepMat[coli][rowi]}}
+
+            <mat-form-field *ngIf="coli > 0 && rowi > 0"
+                            style="text-align: center"
+                            [style.width.px]=60>
+              <input matInput
+                     required
+                     pattern="^([0-9]|[1-9][0-9]|[1-9][0-9][0-9])$|\*"
+                     name="item_{{coli}}{{rowi}}"
+                     [ngModel]="overrepMat[coli][rowi]" />
+              <mat-error>Zahl zwischen 0 und 999 oder *</mat-error>
+            </mat-form-field>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+</mat-expansion-panel>
+
+
+
+<table>
+  <tbody>
+    <tr>
+      <td align="left">
+        <button mat-icon-button color="standard"
+                disabled="false"
+                (click)="apply()">
+          <i class="material-icons">done</i>
+        </button>
+        <button mat-icon-button color="standard" (click)="cancel()"><i class="material-icons">cancel</i></button>
+      </td>
+    </tr>
+  </tbody>
+</table>

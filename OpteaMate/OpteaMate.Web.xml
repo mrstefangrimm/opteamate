@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>OpteaMate.Web</name>
+    </assembly>
+    <members>
+        <member name="M:OpteaMate.Web.EventsController.GetEventsInfo">
+            <remarks>
+            Sample request:
+            
+                GET api/events/info
+                {      
+                    "type": "Collection"
+                    "data" : null
+                    "hrefs":
+                    {
+                        "post": api/events
+                    }
+                }
+            </remarks>
+        </member>
+        <member name="M:OpteaMate.Web.EventsController.PostEvent(OpteaMate.Domain.EventData)">
+            <remarks>
+            Sample request:
+            
+                POST api/events
+                {        
+                    "title": "practice session",
+                    "location": "ice rink #2",
+                    "start": "2020-11-02T21:15",
+                    "optimumId": 1
+                }
+            </remarks>
+        </member>
+    </members>
+</doc>

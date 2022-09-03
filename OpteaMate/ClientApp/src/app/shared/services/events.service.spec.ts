@@ -3,19 +3,19 @@
 //
 
 import { of } from 'rxjs'
-import { EventsSerivce } from './events.service'
+import { EventsService } from './events.service'
 import { TocResponse } from './toc.service'
 
 describe('EventsHttpService', () => {
 
   let httpClientSpy: { get: jasmine.Spy }
   let tocServiceSpy: { getTableOfContent: jasmine.Spy }
-  let target: EventsSerivce
+  let target: EventsService
 
   beforeEach(() => {
     httpClientSpy = jasmine.createSpyObj('HttpClient', ['get'])
     tocServiceSpy = jasmine.createSpyObj('TocService', ['getTableOfContent'])
-    target = new EventsSerivce(httpClientSpy as any, tocServiceSpy as any)
+    target = new EventsService(httpClientSpy as any, tocServiceSpy as any)
   })
 
   afterEach(() => {

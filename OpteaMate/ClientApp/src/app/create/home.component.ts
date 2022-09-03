@@ -7,7 +7,7 @@ import { DateAdapter } from '@angular/material/core'
 import { EventViewComponentInput, EventViewComponentOutput } from './shared/event-view.component'
 import { Guid } from './shared/guid.model'
 import { EventData } from '../shared/models/events.model'
-import { EventsSerivce } from '../shared/services/events.service'
+import { EventsService } from '../shared/services/events.service'
 
 @Component({
   selector: 'app-home',
@@ -25,7 +25,7 @@ export class HomeComponent {
   constructor(
     private readonly router: Router,
     private dateAdapter: DateAdapter<Date>,
-    private readonly eventsService: EventsSerivce) {
+    private readonly eventsService: EventsService) {
 
     this.dateAdapter.setLocale('de')
 
@@ -43,7 +43,7 @@ export class HomeComponent {
   }
 
   onNotify(args: EventViewComponentOutput) {
-    var newEvent = new EventData()
+    let newEvent = new EventData()
     newEvent.title = args.title
     newEvent.location = args.location
     newEvent.optimumId = args.optimumId

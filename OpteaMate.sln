@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorMate", "BlazorMate\Bl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpteaMate.Persistence", "OpteaMate.Persistence\OpteaMate.Persistence.csproj", "{9DD123AD-F904-4941-8064-D00EE76855DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestBunch", "RestBunch\RestBunch.csproj", "{123645D8-7936-4D06-A4A3-92CC945C866D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpteaMate.Domain", "OpteaMate.Domain\OpteaMate.Domain.csproj", "{BD55CB91-1ECB-4420-81E6-C49226FBF90E}"
 EndProject
 Global
@@ -31,10 +29,6 @@ Global
 		{9DD123AD-F904-4941-8064-D00EE76855DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DD123AD-F904-4941-8064-D00EE76855DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DD123AD-F904-4941-8064-D00EE76855DA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{123645D8-7936-4D06-A4A3-92CC945C866D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{123645D8-7936-4D06-A4A3-92CC945C866D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{123645D8-7936-4D06-A4A3-92CC945C866D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{123645D8-7936-4D06-A4A3-92CC945C866D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD55CB91-1ECB-4420-81E6-C49226FBF90E}.Release|Any CPU.ActiveCfg = Release|Any CPU
